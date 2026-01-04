@@ -1,0 +1,8 @@
+# 通用文件
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Docker 相关
+*.log
