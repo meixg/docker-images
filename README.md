@@ -34,14 +34,14 @@
 **快速开始**：
 ```bash
 # 拉取镜像
-docker pull ghcr.io/meixg/dockers/dev-base:latest
+docker pull ghcr.io/meixg/docker-images/dev-base:latest
 
 # 使用 SSH 公钥运行容器
 # 容器名称可选，方便后续管理（如 docker stop dev-base）
 docker run -d -p 2222:22 \
   --name dev-base \
   -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" \
-  ghcr.io/meixg/dockers/dev-base:latest
+  ghcr.io/meixg/docker-images/dev-base:latest
 
 # 连接到容器
 ssh -p 2222 dev@localhost
