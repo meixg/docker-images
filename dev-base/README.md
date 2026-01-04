@@ -6,7 +6,7 @@ Ubuntu 22.04-based development environment container with SSH access.
 
 - **Base OS**: Ubuntu 22.04
 - **SSH Server**: OpenSSH with key-based authentication only
-- **Development Tools**: git, vim, curl, wget, build-essential
+- **Development Tools**: git, vim, tmux, curl, wget, build-essential
 - **Node.js**: LTS 24.x installed via n-install
 - **Package Manager**: pnpm (enabled via corepack)
 - **Shell**: Zsh with Oh My Zsh framework

@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 # 1. 安装基础开发工具
 RUN apt-get update && apt-get install -y \
-    openssh-server sudo curl git vim wget build-essential zsh \
+    openssh-server sudo curl git vim wget build-essential zsh tmux \
     && mkdir -p /var/run/sshd \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
