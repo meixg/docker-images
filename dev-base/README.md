@@ -19,12 +19,12 @@ Ubuntu 22.04-based development environment container with SSH access.
 
 ```bash
 # Pull the image
-docker pull ghcr.io/<your-username>/dockers/dev-base:latest
+docker pull ghcr.io/meixg/dockers/dev-base:latest
 
 # Run with SSH access
 docker run -d -p 2222:22 \
   -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" \
-  ghcr.io/<your-username>/dockers/dev-base:latest
+  ghcr.io/meixg/dockers/dev-base:latest
 
 # Connect to the container
 ssh -p 2222 dev@localhost
