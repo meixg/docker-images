@@ -38,10 +38,19 @@ RUN export PATH="$HOME/n/bin:$PATH" && \
     claude --version
 USER root
 
-# 7. 配置 SSH
+# 7. 配置 SSH 安全加固
 RUN mkdir -p /home/dev/.ssh && \
     chown -R dev:dev /home/dev/.ssh && \
-    chmod 700 /home/dev/.ssh
+    chmod 700 /home/dev/.ssh && \
+    echo "PasswordAuthentication no" >> /etc/ssh/sshd_config && \
+    echo "ChallengeResponseAuthentication no" >> /etc/ssh/sshd_config && \
+    echo "PermitRootLogin no" >> /etc/ssh/sshd_config && \
+    echo "AllowUsers dev" >> /etc/ssh/sshd_config && \
+    echo "MaxAuthTries 3" >> /etc/ssh/sshd_config && \
+    echo "ClientAliveInterval 300" >> /etc/ssh/sshd_config && \
+    echo "ClientAliveCountMax 2" >> /etc/ssh/sshd_config && \
+    echo "X11Forwarding no" >> /etc/ssh/sshd_config && \
+    echo "AllowTcpForwarding no" >> /etc/ssh/sshd_config
 
 # 8. 复制启动脚本
 COPY entrypoint.sh /entrypoint.sh
