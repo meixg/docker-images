@@ -54,9 +54,7 @@ cd dev-base
 docker build -t dev-base .
 
 # 本地测试
-docker run -d -p 2222:22 \
-  -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" \
-  dev-base
+docker run -d -p 2222:22 -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" dev-base
 ```
 
 ## 镜像标签
