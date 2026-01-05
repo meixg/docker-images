@@ -31,11 +31,12 @@ RUN curl -fsSL https://raw.githubusercontent.com/mklement0/n-install/stable/bin/
     pnpm -v
 USER root
 
-# 6. 安装 Claude Code
+# 6. 安装 Claude Code 和 OpenCode
 USER dev
 RUN export PATH="$HOME/n/bin:$PATH" && \
-    npm install -g @anthropic-ai/claude-code && \
-    claude --version
+    npm install -g @anthropic-ai/claude-code opencode-ai && \
+    claude --version && \
+    opencode --version
 USER root
 
 # 7. 配置 SSH 安全加固

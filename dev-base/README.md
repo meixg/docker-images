@@ -12,6 +12,7 @@ Ubuntu 22.04-based development environment container with SSH access.
 - **Shell**: Zsh with Oh My Zsh framework
 - **User**: `dev` user with sudo privileges
 - **Claude Code**: Pre-installed CLI
+- **OpenCode**: Pre-installed CLI
 
 ## Usage
 
