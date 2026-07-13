@@ -9,6 +9,7 @@ on:
       - '**/Dockerfile'
       - '.github/workflows/build-images.yml'
   schedule:
+    # Weekly clean rebuild every Monday at 03:00 UTC.
     - cron: '0 3 * * 1'
   workflow_dispatch:
     inputs:
