@@ -61,7 +61,7 @@ RUN set -eu; \
     test "$(printf '%s\n' "${NODE_TARBALLS}" | wc -l)" -eq 1; \
     NODE_TARBALL="${NODE_TARBALLS}"; \
     NODE_SHA256="$(awk -v file="${NODE_TARBALL}" '$2 == file { print $1 }' "${TMP_DIR}/SHASUMS256.txt")"; \
-    test -n "${NODE_SHA256}"; \
+    test -n "${NODE_SHA256}" || { echo "Error: SHA256 checksum not found for ${NODE_TARBALL}" >&2; exit 1; }; \
     curl -fsSL "${NODE_BASE_URL}/${NODE_TARBALL}" -o "${TMP_DIR}/${NODE_TARBALL}"; \
     echo "${NODE_SHA256}  ${TMP_DIR}/${NODE_TARBALL}" | sha256sum -c -; \
     tar -xJf "${TMP_DIR}/${NODE_TARBALL}" -C /usr/local --strip-components=1 --no-same-owner; \
