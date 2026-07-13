@@ -27,7 +27,7 @@
 **主要特性**：
 - OpenSSH 服务器（仅支持公钥认证）
 - 开发工具：git, vim, tmux, curl, wget, build-essential
-- Node.js LTS 24.x + pnpm
+- Node.js LTS 24.x（官方二进制 + SHA256 校验）+ pnpm
 - Zsh with Oh My Zsh
 - Claude Code CLI
 
