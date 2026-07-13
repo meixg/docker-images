@@ -86,6 +86,9 @@ Then set a password for the `dev` user.
 cd dev-base
 docker build -t dev-base .
 
+# Run the smoke test against a locally built image
+./smoke-test.sh dev-base
+
 # Run locally
 # Container name is optional, helps with management
 docker run -d -p 2222:22 \
@@ -102,6 +105,15 @@ ssh -p 2222 dev@localhost
 - The publish workflow also performs a scheduled rebuild every Monday at 03:00 UTC.
 - Scheduled rebuilds, and manual workflow runs with `clean_rebuild` enabled, force-pull the latest `ubuntu:22.04` base image and bypass BuildKit cache for dependency installation layers.
 - Regular push builds continue to use GitHub Actions cache for faster day-to-day publishes.
+
+## CI Verification and Supply Chain Metadata
+
+- CI builds a local `dev-base` smoke-test image before publishing and runs `sshd -t`.
+- The smoke test starts the container, verifies the hardened SSH configuration, checks that `sshd` stays alive, and confirms public-key login works while root and password logins fail.
+- CI also verifies the preinstalled `node`, `pnpm`, `zsh`, `tmux`, `claude`, and `opencode` commands.
+- Trivy scans the image for `HIGH` and `CRITICAL` OS and application vulnerabilities before publish; any non-waived finding fails the workflow.
+- Temporary Trivy waivers must be recorded in `.trivyignore.yaml` with the vulnerability ID and a justification.
+- Published images include an SBOM attestation and GitHub build provenance attestation in GHCR.
 
 ## Container User
 

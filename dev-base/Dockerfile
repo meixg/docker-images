@@ -30,6 +30,7 @@ RUN curl -fsSL https://raw.githubusercontent.com/mklement0/n-install/stable/bin/
     corepack enable pnpm && \
     pnpm -v
 USER root
+ENV PATH="/home/dev/n/bin:${PATH}"
 
 # 6. 安装 Claude Code 和 OpenCode
 USER dev
