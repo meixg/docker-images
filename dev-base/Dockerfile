@@ -24,10 +24,12 @@ RUN chown dev:dev /home/dev/.zshrc
 
 # 5. 安装 Node.js 和 pnpm
 USER dev
-RUN curl -fsSL https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | bash -s -- -y 24 && \
+RUN curl -fsSL https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | bash -s -- -y latest && \
     export PATH="$HOME/n/bin:$PATH" && \
     node -v && \
+    npm install -g corepack@latest && \
     corepack enable pnpm && \
+    corepack install -g pnpm@latest && \
     pnpm -v
 USER root
 

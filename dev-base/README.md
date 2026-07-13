@@ -7,12 +7,17 @@ Ubuntu 22.04-based development environment container with SSH access.
 - **Base OS**: Ubuntu 22.04
 - **SSH Server**: OpenSSH with key-based authentication only
 - **Development Tools**: git, vim, tmux, curl, wget, build-essential
-- **Node.js**: LTS 24.x installed via n-install
-- **Package Manager**: pnpm (enabled via corepack)
+- **Node.js**: Latest available release installed via n-install
+- **Package Manager**: Latest pnpm release managed via Corepack
 - **Shell**: Zsh with Oh My Zsh framework
 - **User**: `dev` user with sudo privileges
 - **Claude Code**: Pre-installed CLI
 - **OpenCode**: Pre-installed CLI
+
+Node.js, Corepack, pnpm, Claude Code, and OpenCode are intentionally installed
+without fixed version numbers. A clean image build therefore picks up their
+latest available releases; use an image SHA tag when a reproducible toolchain is
+required.
 
 ## Usage
 
