@@ -81,7 +81,7 @@ Then set a password for the `dev` user.
 
 ## Upgrading pinned upstream versions
 
-Pinned values are centralized as `ARG` in `/home/runner/work/docker-images/docker-images/dev-base/Dockerfile`:
+Pinned values are centralized as `ARG` in `dev-base/Dockerfile`:
 
 - `OH_MY_ZSH_COMMIT`
 - `NODE_VERSION`
