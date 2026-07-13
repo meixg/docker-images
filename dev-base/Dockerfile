@@ -56,10 +56,10 @@ RUN set -eu; \
     done; \
     curl -fsSL "${NODE_BASE_URL}/SHASUMS256.txt.asc" -o "${TMP_DIR}/SHASUMS256.txt.asc"; \
     gpg --batch --decrypt --output "${TMP_DIR}/SHASUMS256.txt" "${TMP_DIR}/SHASUMS256.txt.asc"; \
-    NODE_TARBALL_MATCHES="$(awk -v arch="${NODE_ARCH}" '$2 ~ ("^node-v[0-9.]+-linux-" arch "\\.tar\\.xz$") { print $2 }' "${TMP_DIR}/SHASUMS256.txt")"; \
+    NODE_TARBALL_MATCHES="$(awk -v arch="${NODE_ARCH}" '$2 ~ ("^node-v[0-9]+\\.[0-9]+\\.[0-9]+-linux-" arch "\\.tar\\.xz$") { print $2 }' "${TMP_DIR}/SHASUMS256.txt")"; \
     test -n "${NODE_TARBALL_MATCHES}"; \
     MATCH_COUNT="$(printf '%s\n' "${NODE_TARBALL_MATCHES}" | wc -l)"; \
-    test "${MATCH_COUNT}" -eq 1 || { echo "Error: Expected exactly one Node.js tarball, found ${MATCH_COUNT}" >&2; exit 1; }; \
+    test "${MATCH_COUNT}" -eq 1 || { echo "Error: Expected exactly one Node.js tarball, found ${MATCH_COUNT}: ${NODE_TARBALL_MATCHES}" >&2; exit 1; }; \
     NODE_TARBALL="${NODE_TARBALL_MATCHES}"; \
     NODE_SHA256="$(awk -v file="${NODE_TARBALL}" '$2 == file { print $1 }' "${TMP_DIR}/SHASUMS256.txt")"; \
     test -n "${NODE_SHA256}" || { echo "Error: SHA256 checksum not found for ${NODE_TARBALL}" >&2; exit 1; }; \
