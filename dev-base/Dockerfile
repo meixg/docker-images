@@ -1,4 +1,5 @@
 FROM ubuntu:24.04@sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90
+ARG NODE_VERSION=24.4.1
 
 # 1. 安装基础开发工具
 RUN apt-get update && apt-get install -y \
@@ -29,7 +30,6 @@ RUN ARCH="$(dpkg --print-architecture)" && \
         arm64) NODE_ARCH='arm64' ;; \
         *) echo "Unsupported architecture: $ARCH" && exit 1 ;; \
     esac && \
-    NODE_VERSION='24.4.1' && \
     curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz" && \
     curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt" && \
     grep " node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz$" SHASUMS256.txt | sha256sum -c - && \
