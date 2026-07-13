@@ -7,18 +7,15 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 - **Base OS**: Ubuntu 24.04 LTS
 - **SSH Server**: OpenSSH with key-based authentication only
 - **Development Tools**: git, vim, tmux, curl, wget, build-essential
-- **Node.js**: 24.4.1 installed from official multi-architecture tarballs
+- **Node.js**: Latest official binary with SHA256 verification (amd64/arm64)
 - **Package Manager**: pnpm (installed globally)
 - **Shell**: Zsh with Oh My Zsh framework
 - **User**: `dev` user with sudo privileges
 - **Claude Code**: Pre-installed CLI
 - **OpenCode**: Pre-installed CLI
 
-Node.js is pinned to `24.4.1`, and the Dockerfile verifies its archive against
-the signed upstream `SHASUMS256.txt.asc` manifest with the pinned release keys
-before extracting the official multi-architecture tarball. `pnpm`, Claude
-Code, and OpenCode are installed globally during the image build so they are
-immediately available in SSH sessions.
+Node.js, `pnpm`, Claude Code, and OpenCode are preinstalled during the image
+build so they are immediately available in SSH sessions.
 
 ## Usage
 
@@ -90,11 +87,10 @@ Then set a password for the `dev` user.
 
 ## Dependency Update Policy
 
-Node.js is pinned through `NODE_VERSION` and verified against the signed
-upstream `SHASUMS256.txt.asc` release manifest with the pinned Node.js release
-team keys before checking the downloaded archive checksum. Update
-`NODE_VERSION`, refresh the release-keys reference when needed, and rebuild for
-both `linux/amd64` and `linux/arm64` when upgrading it.
+Node.js, pnpm, Claude Code, and OpenCode are intentionally installed without
+fixed version numbers. A clean image build picks up their latest available
+releases. The Node.js archive is verified against the SHA256 checksum published
+alongside the latest official release.
 
 Oh My Zsh remains pinned through `OH_MY_ZSH_COMMIT` to avoid executing an
 unverified remote installer. Update that commit explicitly and rebuild for both
