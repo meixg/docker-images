@@ -7,12 +7,17 @@ Ubuntu 22.04-based development environment container with SSH access.
 - **Base OS**: Ubuntu 22.04
 - **SSH Server**: OpenSSH with key-based authentication only
 - **Development Tools**: git, vim, tmux, curl, wget, build-essential
-- **Node.js**: Pinned official binary with SHA256 verification (amd64/arm64)
-- **Package Manager**: pnpm (enabled via corepack)
+- **Node.js**: Latest official binary with SHA256 verification (amd64/arm64)
+- **Package Manager**: Latest pnpm release managed via Corepack
 - **Shell**: Zsh with Oh My Zsh framework
 - **User**: `dev` user with sudo privileges
 - **Claude Code**: Pre-installed CLI
 - **OpenCode**: Pre-installed CLI
+
+Node.js, Corepack, pnpm, Claude Code, and OpenCode are intentionally installed
+without fixed version numbers. A clean image build therefore picks up their
+latest available releases; use an image SHA tag when a reproducible toolchain is
+required.
 
 ## Usage
 
@@ -79,22 +84,18 @@ echo "dev ALL=(ALL) ALL" >> /etc/sudoers
 ```
 Then set a password for the `dev` user.
 
-## Upgrading pinned upstream versions
+## Dependency Update Policy
 
-Pinned values are centralized as `ARG` in `dev-base/Dockerfile`:
+Node.js, Corepack, pnpm, Claude Code, and OpenCode are intentionally installed
+without fixed version numbers. A clean image build picks up their latest
+available releases. The Node.js archive is verified against the SHA256 checksum
+published alongside the latest official release.
 
-- `OH_MY_ZSH_COMMIT`
-- `NODE_VERSION`
-- `NODE_LINUX_X64_SHA256`
-- `NODE_LINUX_ARM64_SHA256`
+Oh My Zsh remains pinned through `OH_MY_ZSH_COMMIT` to avoid executing an
+unverified remote installer. Update that commit explicitly and rebuild for both
+`linux/amd64` and `linux/arm64` when upgrading it.
 
-Routine update steps:
-
-1. Verify the target Node.js version exists at `https://nodejs.org/dist/v<VERSION>/`.
-2. Choose a target Oh My Zsh commit and update `OH_MY_ZSH_COMMIT`.
-3. Choose a target Node.js release, update `NODE_VERSION`.
-4. Copy amd64/arm64 SHA256 values for `node-v<version>-linux-{x64,arm64}.tar.xz` from `https://nodejs.org/dist/v<VERSION>/SHASUMS256.txt`.
-5. Rebuild for both `linux/amd64` and `linux/arm64` to verify checks pass.
+Use an image SHA tag when a reproducible toolchain is required.
 
 ## Local Development
 

@@ -1,9 +1,6 @@
 FROM ubuntu:22.04
 
 ARG OH_MY_ZSH_COMMIT=677a4592b18c08ddea737f8aca70bac0e9fc9313
-ARG NODE_VERSION=24.5.0
-ARG NODE_LINUX_X64_SHA256=32edb1f2aeaf8ea0d484af33bf3b5d8330d7d33c9cd8c70f811b8a643822e613
-ARG NODE_LINUX_ARM64_SHA256=313367534186a8551d68b39fbc2a6cc36638e583fb5dc75dcf5da3c6582bff3b
 
 # 1. 安装基础开发工具
 RUN apt-get update && apt-get install -y \
@@ -31,33 +28,38 @@ RUN git clone https://github.com/ohmyzsh/ohmyzsh.git /home/dev/.oh-my-zsh && \
 COPY .zshrc /home/dev/.zshrc
 RUN chown dev:dev /home/dev/.zshrc
 
-# 5. 安装 Node.js 和 pnpm（官方二进制 + SHA256 校验）
-# 升级方式：更新 NODE_VERSION 和对应架构 SHA256（来自 nodejs.org 发布页）
+# 5. 安装最新版 Node.js 和 pnpm（官方二进制 + SHA256 校验）
+ENV PATH="/home/dev/n/bin:${PATH}"
 USER dev
 RUN set -eux; \
     ARCH="$(dpkg --print-architecture)"; \
     case "${ARCH}" in \
-        amd64) NODE_ARCH="x64"; NODE_SHA256="${NODE_LINUX_X64_SHA256}" ;; \
-        arm64) NODE_ARCH="arm64"; NODE_SHA256="${NODE_LINUX_ARM64_SHA256}" ;; \
+        amd64) NODE_ARCH="x64" ;; \
+        arm64) NODE_ARCH="arm64" ;; \
         *) echo "Unsupported architecture: ${ARCH}" >&2; exit 1 ;; \
     esac; \
-    NODE_DIST="node-v${NODE_VERSION}-linux-${NODE_ARCH}"; \
     TMP_DIR="$(mktemp -d)"; \
-    curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/${NODE_DIST}.tar.xz" -o "${TMP_DIR}/${NODE_DIST}.tar.xz"; \
-    echo "${NODE_SHA256}  ${TMP_DIR}/${NODE_DIST}.tar.xz" | sha256sum -c -; \
+    NODE_BASE_URL="https://nodejs.org/dist/latest"; \
+    curl -fsSL "${NODE_BASE_URL}/SHASUMS256.txt" -o "${TMP_DIR}/SHASUMS256.txt"; \
+    NODE_TARBALL="$(awk -v arch="${NODE_ARCH}" '$2 ~ ("^node-v[0-9.]+-linux-" arch "\\.tar\\.xz$") { print $2 }' "${TMP_DIR}/SHASUMS256.txt")"; \
+    test -n "${NODE_TARBALL}"; \
+    NODE_SHA256="$(awk -v file="${NODE_TARBALL}" '$2 == file { print $1 }' "${TMP_DIR}/SHASUMS256.txt")"; \
+    test -n "${NODE_SHA256}"; \
+    curl -fsSL "${NODE_BASE_URL}/${NODE_TARBALL}" -o "${TMP_DIR}/${NODE_TARBALL}"; \
+    echo "${NODE_SHA256}  ${TMP_DIR}/${NODE_TARBALL}" | sha256sum -c -; \
     mkdir -p "$HOME/n"; \
-    tar -xJf "${TMP_DIR}/${NODE_DIST}.tar.xz" -C "$HOME/n" --strip-components=1; \
+    tar -xJf "${TMP_DIR}/${NODE_TARBALL}" -C "$HOME/n" --strip-components=1; \
     rm -rf "${TMP_DIR}"; \
-    export PATH="$HOME/n/bin:$PATH" && \
     node -v && \
+    npm install -g corepack@latest && \
     corepack enable pnpm && \
+    corepack install -g pnpm@latest && \
     pnpm -v
 USER root
 
 # 6. 安装 Claude Code 和 OpenCode
 USER dev
-RUN export PATH="$HOME/n/bin:$PATH" && \
-    npm install -g @anthropic-ai/claude-code opencode-ai && \
+RUN npm install -g @anthropic-ai/claude-code opencode-ai && \
     claude --version && \
     opencode --version
 USER root
