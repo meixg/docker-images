@@ -46,6 +46,7 @@ The SSH server is configured with the following security measures:
 | Setting | Value | Purpose |
 |---------|-------|---------|
 | `PasswordAuthentication` | `no` | Only allow public key authentication |
+| `KbdInteractiveAuthentication` | `no` | Disable keyboard-interactive authentication |
 | `PermitRootLogin` | `no` | Disable root SSH access |
 | `AllowUsers` | `dev` | Only allow dev user to login |
 | `MaxAuthTries` | `3` | Limit authentication attempts |

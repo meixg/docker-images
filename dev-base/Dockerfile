@@ -32,6 +32,7 @@ RUN ARCH="$(dpkg --print-architecture)" && \
         *) echo "Unsupported architecture: $ARCH" && exit 1 ;; \
     esac && \
     export GNUPGHOME="$(mktemp -d)" && \
+    # Refresh this pinned reference whenever the Node.js version or release keys change.
     NODE_RELEASE_KEYS_REF='b28073028e6d6855cfb53bf7fa0137599c01f967' && \
     for key in \
         5BE8A3F6C8A5C01D106C0AD820B1A390B168D356 \
