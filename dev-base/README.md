@@ -14,10 +14,11 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 - **Claude Code**: Pre-installed CLI
 - **OpenCode**: Pre-installed CLI
 
-Node.js is pinned to `24.4.1`, verified against the signed upstream
-`SHASUMS256.txt.asc` manifest, and installed from the official multi-architecture
-tarballs. `pnpm`, Claude Code, and OpenCode are installed globally during the
-image build so they are immediately available in SSH sessions.
+Node.js is pinned to `24.4.1`, and the Dockerfile verifies its archive by
+decrypting the signed upstream `SHASUMS256.txt.asc` manifest before extracting
+the official multi-architecture tarball. `pnpm`, Claude Code, and OpenCode are
+installed globally during the image build so they are immediately available in
+SSH sessions.
 
 ## Usage
 
@@ -122,7 +123,7 @@ ssh -p 2222 dev@localhost
 
 - Changes to files under `dev-base/` (including `Dockerfile`, `entrypoint.sh`, and `.zshrc`) trigger the publish workflow on pushes to `main`.
 - The publish workflow also performs a scheduled rebuild every Monday at 03:00 UTC.
-- Scheduled rebuilds, and manual workflow runs with `clean_rebuild` enabled, re-pull the pinned `ubuntu:24.04` base image digest and bypass BuildKit cache for dependency installation layers.
+- Scheduled rebuilds, and manual workflow runs with `clean_rebuild` enabled, re-pull the pinned `ubuntu:24.04` base image digest and bypass BuildKit cache for all build layers.
 - Regular push builds continue to use GitHub Actions cache for faster day-to-day publishes.
 
 ## Container User
