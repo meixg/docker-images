@@ -21,7 +21,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  CLEAN_REBUILD: ${{ github.event_name == 'schedule' || inputs.clean_rebuild == true }}
+  CLEAN_REBUILD: ${{ github.event_name == 'schedule' || github.event.inputs.clean_rebuild == 'true' }}
 
 jobs:
   build-and-push:

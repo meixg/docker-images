@@ -76,7 +76,7 @@ docker run -d -p 2222:22 -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" dev-base
 - 工作流保留 `workflow_dispatch` 手动触发；手动执行时可选择 `clean_rebuild` 来强制干净重建。
 - 工作流还会在 **每周一 UTC 03:00** 定时执行一次例行重建。
 - 普通 push / 默认手动构建继续使用 GitHub Actions BuildKit 缓存，以保持日常构建效率。
-- 定时构建和启用了 `clean_rebuild` 的手动构建会启用 `pull: true` 与 `no-cache: true`，重新拉取已固定的基础镜像摘要并重新执行所有构建层，以获取仓库中已声明版本的最新安全补丁。
+- 定时构建和启用了 `clean_rebuild` 的手动构建会启用 `pull: true` 与 `no-cache: true`，确保构建环境中存在仓库固定的基础镜像摘要并重新执行所有构建层，以获取仓库中已声明版本的最新安全补丁。
 
 ## 镜像标签
 
