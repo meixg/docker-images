@@ -90,10 +90,11 @@ Pinned values are centralized as `ARG` in `dev-base/Dockerfile`:
 
 Routine update steps:
 
-1. Choose a target Oh My Zsh commit and update `OH_MY_ZSH_COMMIT`.
-2. Choose a target Node.js release, update `NODE_VERSION`.
-3. Copy amd64/arm64 SHA256 values for `node-v<version>-linux-{x64,arm64}.tar.xz` from `https://nodejs.org/dist/v<VERSION>/SHASUMS256.txt`.
-4. Rebuild for both `linux/amd64` and `linux/arm64` to verify checks pass.
+1. Verify the target Node.js version exists at `https://nodejs.org/dist/v<VERSION>/`.
+2. Choose a target Oh My Zsh commit and update `OH_MY_ZSH_COMMIT`.
+3. Choose a target Node.js release, update `NODE_VERSION`.
+4. Copy amd64/arm64 SHA256 values for `node-v<version>-linux-{x64,arm64}.tar.xz` from `https://nodejs.org/dist/v<VERSION>/SHASUMS256.txt`.
+5. Rebuild for both `linux/amd64` and `linux/arm64` to verify checks pass.
 
 ## Local Development
 
