@@ -1,8 +1,8 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04@sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90
 
 # 1. 安装基础开发工具
 RUN apt-get update && apt-get install -y \
-    openssh-server sudo curl git vim wget build-essential zsh tmux \
+    ca-certificates openssh-server sudo curl git vim wget build-essential zsh tmux xz-utils \
     && mkdir -p /var/run/sshd \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -23,35 +23,34 @@ COPY .zshrc /home/dev/.zshrc
 RUN chown dev:dev /home/dev/.zshrc
 
 # 5. 安装 Node.js 和 pnpm
-USER dev
-RUN curl -fsSL https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | bash -s -- -y 24 && \
-    export PATH="$HOME/n/bin:$PATH" && \
+RUN ARCH="$(dpkg --print-architecture)" && \
+    case "$ARCH" in \
+        amd64) NODE_ARCH='x64' ;; \
+        arm64) NODE_ARCH='arm64' ;; \
+        *) echo "Unsupported architecture: $ARCH" && exit 1 ;; \
+    esac && \
+    NODE_VERSION='24.4.1' && \
+    curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz" && \
+    curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt" && \
+    grep " node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz$" SHASUMS256.txt | sha256sum -c - && \
+    tar -xJf "node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz" -C /usr/local --strip-components=1 --no-same-owner && \
+    rm "node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz" SHASUMS256.txt && \
     node -v && \
-    corepack enable pnpm && \
-    pnpm -v
-USER root
+    npm -v
 
 # 6. 安装 Claude Code 和 OpenCode
-USER dev
-RUN export PATH="$HOME/n/bin:$PATH" && \
-    npm install -g @anthropic-ai/claude-code opencode-ai && \
+RUN npm install -g pnpm @anthropic-ai/claude-code opencode-ai && \
+    pnpm --version && \
     claude --version && \
     opencode --version
-USER root
 
 # 7. 配置 SSH 安全加固
+COPY sshd_config.d/10-hardening.conf /etc/ssh/sshd_config.d/10-hardening.conf
 RUN mkdir -p /home/dev/.ssh && \
     chown -R dev:dev /home/dev/.ssh && \
     chmod 700 /home/dev/.ssh && \
-    echo "PasswordAuthentication no" >> /etc/ssh/sshd_config && \
-    echo "ChallengeResponseAuthentication no" >> /etc/ssh/sshd_config && \
-    echo "PermitRootLogin no" >> /etc/ssh/sshd_config && \
-    echo "AllowUsers dev" >> /etc/ssh/sshd_config && \
-    echo "MaxAuthTries 3" >> /etc/ssh/sshd_config && \
-    echo "ClientAliveInterval 300" >> /etc/ssh/sshd_config && \
-    echo "ClientAliveCountMax 2" >> /etc/ssh/sshd_config && \
-    echo "X11Forwarding no" >> /etc/ssh/sshd_config && \
-    echo "AllowTcpForwarding no" >> /etc/ssh/sshd_config
+    chmod 644 /etc/ssh/sshd_config.d/10-hardening.conf && \
+    sshd -t
 
 # 8. 复制启动脚本
 COPY entrypoint.sh /entrypoint.sh

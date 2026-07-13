@@ -1,14 +1,14 @@
 # dev-base
 
-Ubuntu 22.04-based development environment container with SSH access.
+Ubuntu 24.04 LTS-based development environment container with SSH access.
 
 ## Features
 
-- **Base OS**: Ubuntu 22.04
+- **Base OS**: Ubuntu 24.04 LTS
 - **SSH Server**: OpenSSH with key-based authentication only
 - **Development Tools**: git, vim, tmux, curl, wget, build-essential
-- **Node.js**: LTS 24.x installed via n-install
-- **Package Manager**: pnpm (enabled via corepack)
+- **Node.js**: 24.x installed from official multi-architecture tarballs
+- **Package Manager**: pnpm (installed globally)
 - **Shell**: Zsh with Oh My Zsh framework
 - **User**: `dev` user with sudo privileges
 - **Claude Code**: Pre-installed CLI
@@ -42,6 +42,8 @@ ssh -p 2222 dev@localhost
 ### SSH Hardening
 
 The SSH server is configured with the following security measures:
+
+These settings are applied via `/etc/ssh/sshd_config.d/10-hardening.conf`, and the image validates them with `sshd -t` during build and container startup.
 
 | Setting | Value | Purpose |
 |---------|-------|---------|

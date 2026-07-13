@@ -10,5 +10,7 @@ if [ -n "$SSH_PUB_KEY" ]; then
 fi
 
 # 启动 SSH 服务
+echo "Validating SSH configuration..."
+/usr/sbin/sshd -t
 echo "Starting SSH server..."
-exec /usr/sbin/sshd -D
+exec /usr/sbin/sshd -D -e
