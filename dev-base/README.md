@@ -7,7 +7,7 @@ Ubuntu 22.04-based development environment container with SSH access.
 - **Base OS**: Ubuntu 22.04
 - **SSH Server**: OpenSSH with key-based authentication only
 - **Development Tools**: git, vim, tmux, curl, wget, build-essential
-- **Node.js**: LTS 24.x installed via n-install
+- **Node.js**: Pinned official binary with SHA256 verification (amd64/arm64)
 - **Package Manager**: pnpm (enabled via corepack)
 - **Shell**: Zsh with Oh My Zsh framework
 - **User**: `dev` user with sudo privileges
@@ -78,6 +78,22 @@ echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 echo "dev ALL=(ALL) ALL" >> /etc/sudoers
 ```
 Then set a password for the `dev` user.
+
+## Upgrading pinned upstream versions
+
+Pinned values are centralized as `ARG` in `/home/runner/work/docker-images/docker-images/dev-base/Dockerfile`:
+
+- `OH_MY_ZSH_COMMIT`
+- `NODE_VERSION`
+- `NODE_LINUX_X64_SHA256`
+- `NODE_LINUX_ARM64_SHA256`
+
+Routine update steps:
+
+1. Choose a target Oh My Zsh commit and update `OH_MY_ZSH_COMMIT`.
+2. Choose a target Node.js release, update `NODE_VERSION`.
+3. Copy amd64/arm64 SHA256 values for `node-v<version>-linux-{x64,arm64}.tar.xz` from the official `SHASUMS256.txt`.
+4. Rebuild for both `linux/amd64` and `linux/arm64` to verify checks pass.
 
 ## Local Development
 
