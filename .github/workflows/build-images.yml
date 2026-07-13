@@ -5,12 +5,23 @@ on:
     branches:
       - main
     paths:
+      - 'dev-base/**'
       - '**/Dockerfile'
       - '.github/workflows/build-images.yml'
+  schedule:
+    # Weekly clean rebuild every Monday at 03:00 UTC.
+    - cron: '0 3 * * 1'
   workflow_dispatch:
+    inputs:
+      clean_rebuild:
+        description: 'Force a clean rebuild (pull latest base image and ignore build cache)'
+        required: false
+        default: false
+        type: boolean
 
 env:
   REGISTRY: ghcr.io
+  CLEAN_REBUILD: ${{ github.event_name == 'schedule' || github.event.inputs.clean_rebuild == 'true' }}
 
 jobs:
   build-and-push:
@@ -57,6 +68,8 @@ jobs:
           context: ./${{ matrix.image }}
           platforms: linux/amd64,linux/arm64
           push: true
+          pull: ${{ env.CLEAN_REBUILD == 'true' }}
+          no-cache: ${{ env.CLEAN_REBUILD == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
