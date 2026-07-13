@@ -15,7 +15,9 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 - **OpenCode**: Pre-installed CLI
 
 Node.js, `pnpm`, Claude Code, and OpenCode are preinstalled during the image
-build so they are immediately available in SSH sessions.
+build so they are immediately available in SSH sessions. The Dockerfile
+authenticates the latest Node.js release manifest with tracked release keys
+before verifying the downloaded archive checksum.
 
 ## Usage
 

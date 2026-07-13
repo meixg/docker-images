@@ -29,7 +29,7 @@ COPY .zshrc /home/dev/.zshrc
 RUN chown dev:dev /home/dev/.zshrc
 
 # 5. 安装最新版 Node.js 和 pnpm（官方二进制 + SHA256 校验）
-RUN set -eux; \
+RUN set -eu; \
     ARCH="$(dpkg --print-architecture)"; \
     case "${ARCH}" in \
         amd64) NODE_ARCH="x64" ;; \
@@ -56,8 +56,10 @@ RUN set -eux; \
     done; \
     curl -fsSL "${NODE_BASE_URL}/SHASUMS256.txt.asc" -o "${TMP_DIR}/SHASUMS256.txt.asc"; \
     gpg --batch --decrypt --output "${TMP_DIR}/SHASUMS256.txt" "${TMP_DIR}/SHASUMS256.txt.asc"; \
-    NODE_TARBALL="$(awk -v arch="${NODE_ARCH}" '$2 ~ ("^node-v[0-9.]+-linux-" arch "\\.tar\\.xz$") { print $2 }' "${TMP_DIR}/SHASUMS256.txt")"; \
-    test -n "${NODE_TARBALL}"; \
+    NODE_TARBALLS="$(awk -v arch="${NODE_ARCH}" '$2 ~ ("^node-v[0-9.]+-linux-" arch "\\.tar\\.xz$") { print $2 }' "${TMP_DIR}/SHASUMS256.txt")"; \
+    test -n "${NODE_TARBALLS}"; \
+    test "$(printf '%s\n' "${NODE_TARBALLS}" | wc -l)" -eq 1; \
+    NODE_TARBALL="${NODE_TARBALLS}"; \
     NODE_SHA256="$(awk -v file="${NODE_TARBALL}" '$2 == file { print $1 }' "${TMP_DIR}/SHASUMS256.txt")"; \
     test -n "${NODE_SHA256}"; \
     curl -fsSL "${NODE_BASE_URL}/${NODE_TARBALL}" -o "${TMP_DIR}/${NODE_TARBALL}"; \
