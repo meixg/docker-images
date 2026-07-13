@@ -40,6 +40,7 @@ RUN set -eu; \
     export GNUPGHOME="${TMP_DIR}/gnupg"; \
     mkdir -p "${GNUPGHOME}"; \
     chmod 700 "${GNUPGHOME}"; \
+    # Intentionally track the latest upstream Node.js release to preserve main-branch behavior.
     NODE_BASE_URL="https://nodejs.org/dist/latest"; \
     NODE_RELEASE_KEYS_REF='b28073028e6d6855cfb53bf7fa0137599c01f967'; \
     for key in \
@@ -58,7 +59,7 @@ RUN set -eu; \
     gpg --batch --decrypt --output "${TMP_DIR}/SHASUMS256.txt" "${TMP_DIR}/SHASUMS256.txt.asc"; \
     NODE_TARBALL_MATCHES="$(awk -v arch="${NODE_ARCH}" '$2 ~ ("^node-v[0-9]+\\.[0-9]+\\.[0-9]+-linux-" arch "\\.tar\\.xz$") { print $2 }' "${TMP_DIR}/SHASUMS256.txt")"; \
     test -n "${NODE_TARBALL_MATCHES}"; \
-    MATCH_COUNT="$(printf '%s\n' "${NODE_TARBALL_MATCHES}" | wc -l)"; \
+    MATCH_COUNT="$(printf '%s\n' "${NODE_TARBALL_MATCHES}" | sed '/^$/d' | wc -l)"; \
     test "${MATCH_COUNT}" -eq 1 || { echo "Error: Expected exactly one Node.js tarball, found ${MATCH_COUNT}: ${NODE_TARBALL_MATCHES}" >&2; exit 1; }; \
     NODE_TARBALL="${NODE_TARBALL_MATCHES}"; \
     NODE_SHA256="$(awk -v file="${NODE_TARBALL}" '$2 == file { print $1 }' "${TMP_DIR}/SHASUMS256.txt")"; \

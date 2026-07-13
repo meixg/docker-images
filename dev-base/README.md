@@ -17,7 +17,9 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 Node.js, `pnpm`, Claude Code, and OpenCode are preinstalled during the image
 build so they are immediately available in SSH sessions. The Dockerfile
 authenticates the latest Node.js release manifest with tracked release keys
-before verifying the downloaded archive checksum.
+before verifying the downloaded archive checksum. `pnpm`, Claude Code, and
+OpenCode are installed from npm over HTTPS and follow npm's standard registry
+trust model rather than the extra signed-manifest flow used for Node.js.
 
 ## Usage
 
@@ -93,7 +95,9 @@ Node.js, pnpm, Claude Code, and OpenCode are intentionally installed without
 fixed version numbers. A clean image build picks up their latest available
 releases. The Node.js archive is verified against the latest upstream
 `SHASUMS256.txt.asc` manifest after that manifest is authenticated with the
-tracked Node.js release keys.
+tracked Node.js release keys. Using the unversioned `latest` endpoint is
+intentional here to preserve the main branch's rolling-toolchain behavior; use
+an image SHA tag when you need a reproducible environment.
 
 Oh My Zsh remains pinned through `OH_MY_ZSH_COMMIT` to avoid executing an
 unverified remote installer. Update that commit explicitly and rebuild for both
