@@ -56,6 +56,7 @@ RUN set -eux; \
     corepack install -g pnpm@latest && \
     pnpm -v
 USER root
+ENV PATH="/home/dev/n/bin:${PATH}"
 
 # 6. 安装 Claude Code 和 OpenCode
 USER dev

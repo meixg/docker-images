@@ -7,6 +7,7 @@ on:
     paths:
       - 'dev-base/**'
       - '**/Dockerfile'
+      - '.trivyignore.yaml'
       - '.github/workflows/build-images.yml'
   schedule:
     # Weekly clean rebuild every Monday at 03:00 UTC.
@@ -24,11 +25,49 @@ env:
   CLEAN_REBUILD: ${{ github.event_name == 'schedule' || github.event.inputs.clean_rebuild == 'true' }}
 
 jobs:
+  verify-dev-base:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Build smoke-test image
+        run: |
+          set -euo pipefail
+          build_args=()
+          if [ "${CLEAN_REBUILD}" = "true" ]; then
+            build_args+=(--pull --no-cache)
+          fi
+          docker build "${build_args[@]}" \
+            -t dev-base-smoke:${{ github.sha }} \
+            ./dev-base
+
+      - name: Run dev-base smoke test
+        run: ./dev-base/smoke-test.sh dev-base-smoke:${{ github.sha }}
+
+      - name: Scan dev-base for high and critical vulnerabilities
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: dev-base-smoke:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          ignore-unfixed: 'false'
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          trivyignores: .trivyignore.yaml
+
   build-and-push:
+    needs: verify-dev-base
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+      attestations: write
+      id-token: write
 
     strategy:
       matrix:
@@ -63,6 +102,7 @@ jobs:
             type=sha,prefix=
 
       - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: ./${{ matrix.image }}
@@ -74,3 +114,11 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          sbom: true
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@96b4a1ef7235a096b17240c259729fdd70c83d45 # v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.image }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
