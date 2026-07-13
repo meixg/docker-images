@@ -106,7 +106,7 @@ Images are automatically tagged with:
 ## Current Images
 
 See individual image directories for detailed documentation:
-- **[dev-base/](dev-base/)** - Ubuntu 22.04 development environment with SSH access
+- **[dev-base/](dev-base/)** - Ubuntu 24.04 LTS development environment with SSH access
 
 ## CI/CD Pipeline
 

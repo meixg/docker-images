@@ -15,14 +15,14 @@ on:
   workflow_dispatch:
     inputs:
       clean_rebuild:
-        description: 'Force a clean rebuild (pull latest base image and ignore build cache)'
+        description: 'Force a clean rebuild (re-pull pinned base image digest and ignore build cache)'
         required: false
         default: false
         type: boolean
 
 env:
   REGISTRY: ghcr.io
-  CLEAN_REBUILD: ${{ github.event_name == 'schedule' || github.event.inputs.clean_rebuild == 'true' }}
+  CLEAN_REBUILD: ${{ toJSON(github.event_name == 'schedule' || github.event.inputs.clean_rebuild == 'true' || github.event.inputs.clean_rebuild == true) }}
 
 jobs:
   verify-dev-base:
@@ -108,8 +108,8 @@ jobs:
           context: ./${{ matrix.image }}
           platforms: linux/amd64,linux/arm64
           push: true
-          pull: ${{ env.CLEAN_REBUILD == 'true' }}
-          no-cache: ${{ env.CLEAN_REBUILD == 'true' }}
+          pull: ${{ fromJSON(env.CLEAN_REBUILD) }}
+          no-cache: ${{ fromJSON(env.CLEAN_REBUILD) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

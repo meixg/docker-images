@@ -23,12 +23,12 @@
 
 ### [dev-base](dev-base/)
 
-基于 Ubuntu 22.04 的开发环境镜像，包含 SSH 访问和常用开发工具。
+基于 Ubuntu 24.04 LTS 的开发环境镜像，包含 SSH 访问和常用开发工具。
 
 **主要特性**：
 - OpenSSH 服务器（仅支持公钥认证）
 - 开发工具：git, vim, tmux, curl, wget, build-essential
-- 最新版 Node.js（官方二进制 + SHA256 校验）+ pnpm
+- 最新官方 Node.js 二进制（GPG 验证清单 + SHA256 校验）+ 全局安装的 pnpm
 - Zsh with Oh My Zsh
 - Claude Code CLI
 - OpenCode CLI
@@ -77,7 +77,7 @@ docker run -d -p 2222:22 -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" dev-base
 - 工作流保留 `workflow_dispatch` 手动触发；手动执行时可选择 `clean_rebuild` 来强制干净重建。
 - 工作流还会在 **每周一 UTC 03:00** 定时执行一次例行重建。
 - 普通 push / 默认手动构建继续使用 GitHub Actions BuildKit 缓存，以保持日常构建效率。
-- 定时构建和启用了 `clean_rebuild` 的手动构建会启用 `pull: true` 与 `no-cache: true`，强制拉取最新基础镜像并重新执行 APT / npm 等依赖安装层，以获取安全和补丁更新。
+- 定时构建和启用了 `clean_rebuild` 的手动构建会启用 `pull: true` 与 `no-cache: true`，确保构建环境中存在仓库固定的基础镜像摘要并重新执行所有构建层，以获取仓库中已声明版本的最新安全补丁。
 
 ## 镜像标签
 

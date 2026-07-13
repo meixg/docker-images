@@ -1,18 +1,25 @@
 # dev-base
 
-Ubuntu 22.04-based development environment container with SSH access.
+Ubuntu 24.04 LTS-based development environment container with SSH access.
 
 ## Features
 
-- **Base OS**: Ubuntu 22.04
+- **Base OS**: Ubuntu 24.04 LTS
 - **SSH Server**: OpenSSH with key-based authentication only
 - **Development Tools**: git, vim, tmux, curl, wget, build-essential
-- **Node.js**: Latest official binary with SHA256 verification (amd64/arm64)
-- **Package Manager**: Latest pnpm release managed via Corepack
+- **Node.js**: Latest official binary with signed manifest verification (amd64/arm64)
+- **Package Manager**: pnpm (installed globally)
 - **Shell**: Zsh with Oh My Zsh framework
 - **User**: `dev` user with sudo privileges
 - **Claude Code**: Pre-installed CLI
 - **OpenCode**: Pre-installed CLI
+
+Node.js, `pnpm`, Claude Code, and OpenCode are preinstalled during the image
+build so they are immediately available in SSH sessions. The Dockerfile
+authenticates the latest Node.js release manifest with tracked release keys
+before verifying the downloaded archive checksum. `pnpm`, Claude Code, and
+OpenCode are installed from npm over HTTPS and follow npm's standard registry
+trust model rather than the extra signed-manifest flow used for Node.js.
 
 ## Usage
 
@@ -74,6 +81,7 @@ The SSH server is configured with the following security measures:
 | Setting | Value | Purpose |
 |---------|-------|---------|
 | `PasswordAuthentication` | `no` | Only allow public key authentication |
+| `KbdInteractiveAuthentication` | `no` | Disable keyboard-interactive authentication |
 | `PermitRootLogin` | `no` | Disable root SSH access |
 | `AllowUsers` | `dev` | Only allow dev user to login |
 | `MaxAuthTries` | `3` | Limit authentication attempts |
@@ -81,6 +89,8 @@ The SSH server is configured with the following security measures:
 | `ClientAliveCountMax` | `2` | Disconnect after 10 min timeout |
 | `X11Forwarding` | `no` | Disable X11 forwarding |
 | `AllowTcpForwarding` | `no` | Disable TCP forwarding |
+
+These settings are applied via `/etc/ssh/sshd_config.d/10-hardening.conf`, and the image validates them with `sshd -t` during build and container startup.
 
 ### NOPASSWD Sudo Trade-off
 
@@ -109,10 +119,13 @@ Then set a password for the `dev` user.
 
 ## Dependency Update Policy
 
-Node.js, Corepack, pnpm, Claude Code, and OpenCode are intentionally installed
-without fixed version numbers. A clean image build picks up their latest
-available releases. The Node.js archive is verified against the SHA256 checksum
-published alongside the latest official release.
+Node.js, pnpm, Claude Code, and OpenCode are intentionally installed without
+fixed version numbers. A clean image build picks up their latest available
+releases. The Node.js archive is verified against the latest upstream
+`SHASUMS256.txt.asc` manifest after that manifest is authenticated with the
+tracked Node.js release keys. Using the unversioned `latest` endpoint is
+intentional here to preserve the main branch's rolling-toolchain behavior; use
+an image SHA tag when you need a reproducible environment.
 
 Oh My Zsh remains pinned through `OH_MY_ZSH_COMMIT` to avoid executing an
 unverified remote installer. Update that commit explicitly and rebuild for both
@@ -144,7 +157,7 @@ ssh -p 2222 dev@localhost
 
 - Changes to files under `dev-base/` (including `Dockerfile`, `entrypoint.sh`, and `.zshrc`) trigger the publish workflow on pushes to `main`.
 - The publish workflow also performs a scheduled rebuild every Monday at 03:00 UTC.
-- Scheduled rebuilds, and manual workflow runs with `clean_rebuild` enabled, force-pull the latest `ubuntu:22.04` base image and bypass BuildKit cache for dependency installation layers.
+- Scheduled rebuilds, and manual workflow runs with `clean_rebuild` enabled, ensure the pinned `ubuntu:24.04` base image digest is present locally and bypass BuildKit cache for all build layers.
 - Regular push builds continue to use GitHub Actions cache for faster day-to-day publishes.
 
 ## CI Verification and Supply Chain Metadata
