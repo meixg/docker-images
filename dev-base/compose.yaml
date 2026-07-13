@@ -1,0 +1,9 @@
+services:
+  dev-base:
+    image: ghcr.io/meixg/docker-images/dev-base:latest
+    container_name: dev-base
+    ports:
+      - "2222:22"
+    environment:
+      SSH_PUB_KEY: "${SSH_PUB_KEY:?Set SSH_PUB_KEY to your SSH public key}"
+

@@ -11,6 +11,7 @@
 │       └── build-images.yml    # GitHub Actions 工作流
 ├── dev-base/                    # 开发基础镜像
 │   ├── Dockerfile
+│   ├── compose.yaml
 │   ├── entrypoint.sh
 │   ├── .zshrc
 │   └── README.md                # 详细文档
