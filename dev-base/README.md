@@ -33,6 +33,34 @@ docker run -d -p 2222:22 \
 ssh -p 2222 dev@localhost
 ```
 
+### Docker Compose
+
+The included `compose.yaml` runs the published image and exposes its SSH server on
+host port `2222`. Export your public key before starting the service; Compose will
+stop with an error if `SSH_PUB_KEY` is unset or empty.
+
+```bash
+cd dev-base
+
+# Start the container
+export SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)"
+docker compose up -d
+
+# Connect over SSH
+ssh -p 2222 dev@localhost
+```
+
+To inspect or stop the service:
+
+```bash
+docker compose logs -f
+docker compose down
+```
+
+If your public key uses a different filename, replace `~/.ssh/id_rsa.pub` with
+that path. To use another host port, change the `2222` side of `2222:22` in
+`compose.yaml`.
+
 ### Environment Variables
 
 - `SSH_PUB_KEY` - SSH public key for `dev` user (required)
