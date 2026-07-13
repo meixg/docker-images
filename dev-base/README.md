@@ -14,6 +14,11 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 - **Claude Code**: Pre-installed CLI
 - **OpenCode**: Pre-installed CLI
 
+Node.js is pinned to `24.4.1`, verified against the signed upstream
+`SHASUMS256.txt.asc` manifest, and installed from the official multi-architecture
+tarballs. `pnpm`, Claude Code, and OpenCode are installed globally during the
+image build so they are immediately available in SSH sessions.
+
 ## Usage
 
 ### Pull and Run
@@ -82,6 +87,20 @@ echo "dev ALL=(ALL) ALL" >> /etc/sudoers
 ```
 Then set a password for the `dev` user.
 
+## Dependency Update Policy
+
+Node.js is pinned through `NODE_VERSION` and verified by decrypting the
+upstream `SHASUMS256.txt.asc` release manifest with the pinned Node.js release
+team keys before checking the downloaded archive checksum. Update
+`NODE_VERSION`, refresh the release-keys reference when needed, and rebuild for
+both `linux/amd64` and `linux/arm64` when upgrading it.
+
+Oh My Zsh remains pinned through `OH_MY_ZSH_COMMIT` to avoid executing an
+unverified remote installer. Update that commit explicitly and rebuild for both
+`linux/amd64` and `linux/arm64` when upgrading it.
+
+Use an image SHA tag when a reproducible toolchain is required.
+
 ## Local Development
 
 ```bash
@@ -98,6 +117,13 @@ docker run -d -p 2222:22 \
 # Connect
 ssh -p 2222 dev@localhost
 ```
+
+## Image Rebuild Policy
+
+- Changes to files under `dev-base/` (including `Dockerfile`, `entrypoint.sh`, and `.zshrc`) trigger the publish workflow on pushes to `main`.
+- The publish workflow also performs a scheduled rebuild every Monday at 03:00 UTC.
+- Scheduled rebuilds, and manual workflow runs with `clean_rebuild` enabled, re-pull the pinned `ubuntu:24.04` base image digest and bypass BuildKit cache for dependency installation layers.
+- Regular push builds continue to use GitHub Actions cache for faster day-to-day publishes.
 
 ## Container User
 

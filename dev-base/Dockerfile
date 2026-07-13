@@ -2,6 +2,8 @@
 FROM ubuntu:24.04@sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90
 ARG NODE_VERSION=24.4.1
 
+ARG OH_MY_ZSH_COMMIT=677a4592b18c08ddea737f8aca70bac0e9fc9313
+
 # 1. 安装基础开发工具
 RUN apt-get update && apt-get install -y \
     ca-certificates openssh-server sudo curl git vim wget build-essential zsh tmux xz-utils \
@@ -14,9 +16,13 @@ RUN useradd -m -s /bin/bash dev && \
     usermod -aG sudo dev && \
     echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# 3. 安装 oh-my-zsh
-RUN export ZSH="/home/dev/.oh-my-zsh" && \
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended && \
+# 3. 安装 oh-my-zsh（固定 commit，避免执行远程安装脚本）
+# 升级方式：更新 OH_MY_ZSH_COMMIT 到目标 commit，并确认构建通过
+RUN git clone https://github.com/ohmyzsh/ohmyzsh.git /home/dev/.oh-my-zsh && \
+    cd /home/dev/.oh-my-zsh && \
+    git checkout --detach "${OH_MY_ZSH_COMMIT}" && \
+    test "$(git rev-parse HEAD)" = "${OH_MY_ZSH_COMMIT}" && \
+    rm -rf /home/dev/.oh-my-zsh/.git && \
     chsh -s /bin/zsh dev && \
     chown -R dev:dev /home/dev/.oh-my-zsh
 
