@@ -43,8 +43,6 @@ ssh -p 2222 dev@localhost
 
 The SSH server is configured with the following security measures:
 
-These settings are applied via `/etc/ssh/sshd_config.d/10-hardening.conf`, and the image validates them with `sshd -t` during build and container startup.
-
 | Setting | Value | Purpose |
 |---------|-------|---------|
 | `PasswordAuthentication` | `no` | Only allow public key authentication |
@@ -55,6 +53,8 @@ These settings are applied via `/etc/ssh/sshd_config.d/10-hardening.conf`, and t
 | `ClientAliveCountMax` | `2` | Disconnect after 10 min timeout |
 | `X11Forwarding` | `no` | Disable X11 forwarding |
 | `AllowTcpForwarding` | `no` | Disable TCP forwarding |
+
+These settings are applied via `/etc/ssh/sshd_config.d/10-hardening.conf`, and the image validates them with `sshd -t` during build and container startup.
 
 ### NOPASSWD Sudo Trade-off
 

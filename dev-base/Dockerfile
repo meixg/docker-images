@@ -45,7 +45,7 @@ RUN npm install -g pnpm @anthropic-ai/claude-code opencode-ai && \
     opencode --version
 
 # 7. 配置 SSH 安全加固
-COPY sshd_config.d/10-hardening.conf /etc/ssh/sshd_config.d/10-hardening.conf
+COPY sshd_config.d/10-hardening.conf /etc/ssh/sshd_config.d/
 RUN mkdir -p /home/dev/.ssh && \
     chown -R dev:dev /home/dev/.ssh && \
     chmod 700 /home/dev/.ssh && \
