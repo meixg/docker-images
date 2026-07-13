@@ -96,6 +96,13 @@ docker run -d -p 2222:22 \
 ssh -p 2222 dev@localhost
 ```
 
+## Image Rebuild Policy
+
+- Changes to files under `dev-base/` (including `Dockerfile`, `entrypoint.sh`, and `.zshrc`) trigger the publish workflow on pushes to `main`.
+- The publish workflow also performs a scheduled rebuild every Monday at 03:00 UTC.
+- Scheduled rebuilds, and manual workflow runs with `clean_rebuild` enabled, force-pull the latest `ubuntu:22.04` base image and bypass BuildKit cache for dependency installation layers.
+- Regular push builds continue to use GitHub Actions cache for faster day-to-day publishes.
+
 ## Container User
 
 The container runs as `root` (required for SSH server to bind port 22).
