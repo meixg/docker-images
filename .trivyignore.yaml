@@ -1,7 +1,7 @@
-# Temporary vulnerability waivers belong in entries with an explicit reason.
+# Temporary vulnerability waivers belong under `vulnerabilities` with an
+# explicit statement.
 # Example:
+# vulnerabilities:
 #   - id: CVE-2024-12345
-#     type: vulnerability
-#     severity: HIGH
-#     reason: "Pending upstream fix; tracked in meixg/docker-images#123"
-entries: []
+#     statement: "Pending upstream fix; tracked in meixg/docker-images#123"
+vulnerabilities: []
