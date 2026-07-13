@@ -21,6 +21,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  CLEAN_REBUILD: ${{ toJSON(github.event_name == 'schedule' || github.event.inputs.clean_rebuild == 'true' || github.event.inputs.clean_rebuild == true) }}
 
 jobs:
   build-and-push:
@@ -67,8 +68,8 @@ jobs:
           context: ./${{ matrix.image }}
           platforms: linux/amd64,linux/arm64
           push: true
-          pull: ${{ github.event_name == 'schedule' || github.event.inputs.clean_rebuild == 'true' || github.event.inputs.clean_rebuild == true }}
-          no-cache: ${{ github.event_name == 'schedule' || github.event.inputs.clean_rebuild == 'true' || github.event.inputs.clean_rebuild == true }}
+          pull: ${{ fromJSON(env.CLEAN_REBUILD) }}
+          no-cache: ${{ fromJSON(env.CLEAN_REBUILD) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
