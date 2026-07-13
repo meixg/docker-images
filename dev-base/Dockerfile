@@ -1,3 +1,4 @@
+# Refresh this pinned digest periodically to pick up new Ubuntu 24.04 security updates.
 FROM ubuntu:24.04@sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90
 ARG NODE_VERSION=24.4.1
 
@@ -30,11 +31,28 @@ RUN ARCH="$(dpkg --print-architecture)" && \
         arm64) NODE_ARCH='arm64' ;; \
         *) echo "Unsupported architecture: $ARCH" && exit 1 ;; \
     esac && \
+    export GNUPGHOME="$(mktemp -d)" && \
+    NODE_RELEASE_KEYS_REF='b28073028e6d6855cfb53bf7fa0137599c01f967' && \
+    for key in \
+        5BE8A3F6C8A5C01D106C0AD820B1A390B168D356 \
+        DD792F5973C6DE52C432CBDAC77ABFA00DDBF2B7 \
+        CC68F5A3106FF448322E48ED27F5E38D5B0A215F \
+        8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
+        890C08DB8579162FEE0DF9DB8BEAB4DFCF555EF4 \
+        C82FA3AE1CBEDC6BE46B9360C43CEC45C17AB93C \
+        108F52B48DB57BB0CC439B2997B01419BD92F80A \
+        A363A499291CBBC940DD62E41F10027AF002F8B0; do \
+        curl -fsSLO "https://raw.githubusercontent.com/nodejs/release-keys/${NODE_RELEASE_KEYS_REF}/keys/${key}.asc" && \
+        gpg --batch --import "${key}.asc"; \
+    done && \
     curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz" && \
-    curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt" && \
+    curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt.asc" && \
+    gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc && \
+    gpgconf --kill all && \
+    rm -rf "$GNUPGHOME" && \
     grep " node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz$" SHASUMS256.txt | sha256sum -c - && \
     tar -xJf "node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz" -C /usr/local --strip-components=1 --no-same-owner && \
-    rm "node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz" SHASUMS256.txt && \
+    rm -f "node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt ./*.asc && \
     node -v && \
     npm -v
 
