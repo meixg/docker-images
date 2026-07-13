@@ -13,4 +13,4 @@ fi
 echo "Validating SSH configuration..."
 /usr/sbin/sshd -t
 echo "Starting SSH server..."
-exec /usr/sbin/sshd -D -e
+exec /usr/sbin/sshd -D
