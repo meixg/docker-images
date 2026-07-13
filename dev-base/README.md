@@ -14,11 +14,6 @@ Ubuntu 22.04-based development environment container with SSH access.
 - **Claude Code**: Pre-installed CLI
 - **OpenCode**: Pre-installed CLI
 
-Node.js, Corepack, pnpm, Claude Code, and OpenCode are intentionally installed
-without fixed version numbers. A clean image build therefore picks up their
-latest available releases; use an image SHA tag when a reproducible toolchain is
-required.
-
 ## Usage
 
 ### Pull and Run
