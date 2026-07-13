@@ -37,8 +37,25 @@ RUN set -eux; \
         *) echo "Unsupported architecture: ${ARCH}" >&2; exit 1 ;; \
     esac; \
     TMP_DIR="$(mktemp -d)"; \
+    export GNUPGHOME="${TMP_DIR}/gnupg"; \
+    mkdir -p "${GNUPGHOME}"; \
+    chmod 700 "${GNUPGHOME}"; \
     NODE_BASE_URL="https://nodejs.org/dist/latest"; \
-    curl -fsSL "${NODE_BASE_URL}/SHASUMS256.txt" -o "${TMP_DIR}/SHASUMS256.txt"; \
+    NODE_RELEASE_KEYS_REF='b28073028e6d6855cfb53bf7fa0137599c01f967'; \
+    for key in \
+        5BE8A3F6C8A5C01D106C0AD820B1A390B168D356 \
+        DD792F5973C6DE52C432CBDAC77ABFA00DDBF2B7 \
+        CC68F5A3106FF448322E48ED27F5E38D5B0A215F \
+        8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
+        890C08DB8579162FEE0DF9DB8BEAB4DFCF555EF4 \
+        C82FA3AE1CBEDC6BE46B9360C43CEC45C17AB93C \
+        108F52B48DB57BB0CC439B2997B01419BD92F80A \
+        A363A499291CBBC940DD62E41F10027AF002F8B0; do \
+        curl -fsSL "https://raw.githubusercontent.com/nodejs/release-keys/${NODE_RELEASE_KEYS_REF}/keys/${key}.asc" -o "${TMP_DIR}/${key}.asc"; \
+        gpg --batch --import "${TMP_DIR}/${key}.asc"; \
+    done; \
+    curl -fsSL "${NODE_BASE_URL}/SHASUMS256.txt.asc" -o "${TMP_DIR}/SHASUMS256.txt.asc"; \
+    gpg --batch --decrypt --output "${TMP_DIR}/SHASUMS256.txt" "${TMP_DIR}/SHASUMS256.txt.asc"; \
     NODE_TARBALL="$(awk -v arch="${NODE_ARCH}" '$2 ~ ("^node-v[0-9.]+-linux-" arch "\\.tar\\.xz$") { print $2 }' "${TMP_DIR}/SHASUMS256.txt")"; \
     test -n "${NODE_TARBALL}"; \
     NODE_SHA256="$(awk -v file="${NODE_TARBALL}" '$2 == file { print $1 }' "${TMP_DIR}/SHASUMS256.txt")"; \
@@ -46,6 +63,7 @@ RUN set -eux; \
     curl -fsSL "${NODE_BASE_URL}/${NODE_TARBALL}" -o "${TMP_DIR}/${NODE_TARBALL}"; \
     echo "${NODE_SHA256}  ${TMP_DIR}/${NODE_TARBALL}" | sha256sum -c -; \
     tar -xJf "${TMP_DIR}/${NODE_TARBALL}" -C /usr/local --strip-components=1 --no-same-owner; \
+    gpgconf --kill all; \
     rm -rf "${TMP_DIR}"; \
     node -v && \
     npm -v

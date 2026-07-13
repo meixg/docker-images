@@ -7,7 +7,7 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 - **Base OS**: Ubuntu 24.04 LTS
 - **SSH Server**: OpenSSH with key-based authentication only
 - **Development Tools**: git, vim, tmux, curl, wget, build-essential
-- **Node.js**: Latest official binary with SHA256 verification (amd64/arm64)
+- **Node.js**: Latest official binary with signed manifest verification (amd64/arm64)
 - **Package Manager**: pnpm (installed globally)
 - **Shell**: Zsh with Oh My Zsh framework
 - **User**: `dev` user with sudo privileges
@@ -89,8 +89,9 @@ Then set a password for the `dev` user.
 
 Node.js, pnpm, Claude Code, and OpenCode are intentionally installed without
 fixed version numbers. A clean image build picks up their latest available
-releases. The Node.js archive is verified against the SHA256 checksum published
-alongside the latest official release.
+releases. The Node.js archive is verified against the latest upstream
+`SHASUMS256.txt.asc` manifest after that manifest is authenticated with the
+tracked Node.js release keys.
 
 Oh My Zsh remains pinned through `OH_MY_ZSH_COMMIT` to avoid executing an
 unverified remote installer. Update that commit explicitly and rebuild for both
