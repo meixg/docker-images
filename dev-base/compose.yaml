@@ -3,7 +3,22 @@ services:
     image: ghcr.io/meixg/docker-images/dev-base:latest
     container_name: dev-base
     ports:
-      - "2222:22"
+      # A listening socket binds an IP address, not a MagicDNS hostname.
+      # Resolve this host's Tailscale IPv4 address before starting Compose.
+      - "${TAILSCALE_IP:?Set TAILSCALE_IP with: export TAILSCALE_IP=$(tailscale ip -4)}:2222:22"
     environment:
       SSH_PUB_KEY: "${SSH_PUB_KEY:?Set SSH_PUB_KEY to your SSH public key}"
+    cap_drop:
+      # Not a substitute for the host firewall, but removes raw-packet scanning.
+      - NET_RAW
+    networks:
+      - restricted
 
+networks:
+  restricted:
+    name: dev-base-restricted
+    driver: bridge
+    enable_ipv6: false
+    driver_opts:
+      # Stable host interface name for host firewall rules.
+      com.docker.network.bridge.name: devbase0

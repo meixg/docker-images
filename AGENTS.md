@@ -44,6 +44,26 @@ Before committing any changes, ensure:
    - Document what each port does
    - Consider firewall rules in documentation
 
+### Publicly Acceptable Operational Metadata
+
+Generic security and networking configuration may be committed publicly when it
+does not identify a real person, device, tailnet, or household network. Security
+controls must not depend on this configuration remaining secret.
+
+Acceptable examples include:
+- Generic product and component names such as Docker, UFW, Tailscale, and `ufw-docker`
+- Repository-defined local interface or network names such as `devbase0`
+- Standard reserved ranges such as RFC1918, link-local, multicast, and Tailscale CGNAT ranges
+- Placeholder hostnames, addresses, usernames, and public-key values
+- General firewall design, isolation behavior, and documented threat-model assumptions
+
+Do not commit:
+- Real Tailscale IPs, MagicDNS hostnames, tailnet names, device names, or Tailscale policy identities
+- Real household public IPs, LAN host addresses, router/NAS addresses, or network topology details
+- Actual SSH keys, including identifying public keys, or any authentication material
+- Personal usernames, email addresses, home-directory paths, or other identifying data
+- `.env` files or runtime output from commands such as `tailscale status`, `ip route`, or `docker inspect`
+
 ### Image Modification Checklist
 
 Use this checklist before pushing changes:
@@ -53,6 +73,7 @@ Use this checklist before pushing changes:
 - [ ] User privileges are appropriate for public use
 - [ ] No unnecessary services or packages installed
 - [ ] All configuration files are generic (no personal settings)
+- [ ] Scripts and documentation contain placeholders rather than real device, tailnet, or household-network identifiers
 - [ ] Documentation is updated with any new security considerations
 
 ## Repository Structure

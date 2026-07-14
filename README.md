@@ -40,16 +40,44 @@ docker pull ghcr.io/meixg/docker-images/dev-base:latest
 
 # 使用 SSH 公钥运行容器
 # 容器名称可选，方便后续管理（如 docker stop dev-base）
-docker run -d -p 2222:22 \
+export TAILSCALE_IP="$(tailscale ip -4)"
+docker run -d -p "${TAILSCALE_IP}:2222:22" \
   --name dev-base \
   -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" \
   ghcr.io/meixg/docker-images/dev-base:latest
 
-# 连接到容器
-ssh -p 2222 dev@localhost
+# 通过 Tailscale MagicDNS hostname 连接到容器
+ssh -p 2222 dev@<desktop-magicdns-hostname>
 ```
 
 📖 **查看 [dev-base/README.md](dev-base/) 获取完整文档和安全配置说明**
+
+### 宿主机隔离初始化
+
+在首次启动安全隔离版本前，先启用 Docker user namespace remapping，再安装
+仅针对 `devbase0` 的家庭网络出站限制：
+
+```bash
+cd dev-base
+sudo ./host-userns-remap.sh apply
+sudo ./host-firewall.sh apply
+
+export TAILSCALE_IP="$(tailscale ip -4)"
+export SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)"
+docker compose up -d
+```
+
+查看或撤销对应设置：
+
+```bash
+sudo ./host-userns-remap.sh status
+sudo ./host-userns-remap.sh remove
+sudo ./host-firewall.sh status
+sudo ./host-firewall.sh remove
+```
+
+`host-userns-remap.sh` 会重启 Docker，应在重要容器启动前执行。两个脚本的
+验证、备份、回滚、兼容性和安全影响详见 [dev-base 文档](dev-base/README.md#host-isolation-scripts)。
 
 ## 添加新镜像
 
@@ -68,7 +96,9 @@ cd dev-base
 docker build -t dev-base .
 
 # 本地测试
-docker run -d -p 2222:22 -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" dev-base
+export TAILSCALE_IP="$(tailscale ip -4)"
+docker run -d -p "${TAILSCALE_IP}:2222:22" \
+  -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" dev-base
 ```
 
 ## 构建触发与例行重建
