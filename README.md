@@ -15,6 +15,10 @@
 │   ├── entrypoint.sh
 │   ├── .zshrc
 │   └── README.md                # 详细文档
+├── dev-paseo/                   # Paseo 守护进程镜像
+│   ├── Dockerfile
+│   ├── entrypoint.sh
+│   └── README.md                # 详细文档
 ├── CLAUDE.md                    # Claude Code 使用指南
 └── README.md
 ```
@@ -52,6 +56,36 @@ ssh -p 2222 dev@<desktop-magicdns-hostname>
 
 📖 **查看 [dev-base/README.md](dev-base/) 获取完整文档和安全配置说明**
 
+### [dev-paseo](dev-paseo/)
+
+基于 `dev-base` 的 Paseo 守护进程镜像，提供开箱即用的 Paseo 服务器。
+
+**主要特性**：
+- 继承 dev-base 的所有开发工具（git, vim, tmux, Node.js, pnpm, Claude Code, OpenCode）
+- 预装 Paseo CLI 和 Server（从 npm 安装）
+- Paseo Web UI（默认端口 6767）
+- 无 SSH，只运行 Paseo 守护进程
+- 以 `dev` 用户运行，`tini` 作为 init 进程
+
+**快速开始**：
+```bash
+# 拉取镜像
+docker pull ghcr.io/meixg/docker-images/dev-paseo:latest
+
+# 运行 Paseo 容器
+docker run -d \
+  --name dev-paseo \
+  -p 6767:6767 \
+  -v dev-paseo-home:/home/dev \
+  -e PASEO_PASSWORD="your-strong-password" \
+  ghcr.io/meixg/docker-images/dev-paseo:latest
+
+# 访问 Web UI
+# 打开浏览器访问 http://localhost:6767
+```
+
+📖 **查看 [dev-paseo/README.md](dev-paseo/) 获取完整文档和配置说明**
+
 ### 宿主机隔离初始化
 
 在首次启动安全隔离版本前，先启用 Docker user namespace remapping，再安装
@@ -81,9 +115,13 @@ sudo ./host-firewall.sh remove
 
 ## 添加新镜像
 
+基础镜像（如 `dev-base`）应添加到 `build-images.yml` 的 `matrix.image` 数组中。
+派生镜像（继承现有镜像的）建议添加独立 job，依赖基础镜像的构建完成。
+
+具体步骤：
 1. 创建新文件夹（例如 `my-service/`）
-2. 在文件夹中创建 `Dockerfile` 和 `README.md`
-3. 在 `.github/workflows/build-images.yml` 的 `matrix.image` 数组中添加新镜像名称
+2. 在文件夹中创建 `Dockerfile`、`entrypoint.sh` 和 `README.md`
+3. 在 `.github/workflows/build-images.yml` 中添加对应的构建 job
 4. 提交并推送，GitHub Actions 会自动构建并推送镜像
 
 **重要**：新镜像需要遵循 [安全策略](CLAUDE.md#security-policy)，确保适合公开发布。
@@ -91,19 +129,18 @@ sudo ./host-firewall.sh remove
 ## 本地构建
 
 ```bash
-# 构建特定镜像
+# 构建 dev-base
 cd dev-base
 docker build -t dev-base .
 
-# 本地测试
-export TAILSCALE_IP="$(tailscale ip -4)"
-docker run -d -p "${TAILSCALE_IP}:2222:22" \
-  -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" dev-base
+# 构建 dev-paseo（依赖 dev-base:latest）
+cd dev-paseo
+docker build -t dev-paseo .
 ```
 
 ## 构建触发与例行重建
 
-- 推送到 `main` 时，只要 `dev-base/` 下的文件（包括 `Dockerfile`、`entrypoint.sh`、`.zshrc`）或 `.github/workflows/build-images.yml` 发生变化，就会自动构建并发布镜像。
+- 推送到 `main` 时，只要任何镜像目录下的文件（包括 `Dockerfile`、`entrypoint.sh`、`.zshrc`）或 `.github/workflows/build-images.yml` 发生变化，就会自动构建并发布镜像。
 - 工作流保留 `workflow_dispatch` 手动触发；手动执行时可选择 `clean_rebuild` 来强制干净重建。
 - 工作流还会在 **每周一 UTC 03:00** 定时执行一次例行重建。
 - 普通 push / 默认手动构建继续使用 GitHub Actions BuildKit 缓存，以保持日常构建效率。
