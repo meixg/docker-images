@@ -105,6 +105,39 @@ default_mapping_ready() {
     subordinate_ranges_valid "${SUBGID_FILE}"
 }
 
+fix_dockremap_overlap() {
+  local file dockremap_start dockremap_count dockremap_end overlap_found max_conflict_end
+  for file in "${SUBUID_FILE}" "${SUBGID_FILE}"; do
+    dockremap_start=$(awk -F: '$1 == "dockremap" {print $2}' "${file}")
+    [[ -n "${dockremap_start}" && "${dockremap_start}" =~ ^[0-9]+$ ]] || continue
+    dockremap_count=$(awk -F: '$1 == "dockremap" {print $3}' "${file}")
+    [[ -n "${dockremap_count}" && "${dockremap_count}" =~ ^[0-9]+$ ]] || continue
+    dockremap_end=$((dockremap_start + dockremap_count - 1))
+    overlap_found=0
+    max_conflict_end=0
+
+    while IFS=: read -r owner start count; do
+      [[ "${owner}" == "dockremap" ]] && continue
+      [[ "${start}" =~ ^[0-9]+$ ]] || continue
+      [[ "${count}" =~ ^[0-9]+$ && "${count}" -gt 0 ]] || continue
+      local end=$((start + count - 1))
+      if [[ "${start}" -le "${dockremap_end}" && "${dockremap_start}" -le "${end}" ]]; then
+        overlap_found=1
+        echo "Overlapping subordinate range in ${file}: ${owner} and dockremap" >&2
+        if [[ "${end}" -gt "${max_conflict_end}" ]]; then
+          max_conflict_end="${end}"
+        fi
+      fi
+    done < "${file}"
+
+    if [[ "${overlap_found}" -eq 1 ]]; then
+      local new_start=$((max_conflict_end + 1))
+      echo "Adjusting dockremap in ${file}: ${dockremap_start}:${dockremap_count} -> ${new_start}:${dockremap_count}" >&2
+      sed -i "s/^dockremap:${dockremap_start}:${dockremap_count}$/dockremap:${new_start}:${dockremap_count}/" "${file}"
+    fi
+  done
+}
+
 confirm_restart() {
   local action="$1"
   if [[ "${ASSUME_YES}" == true ]]; then
@@ -249,6 +282,7 @@ apply_userns() {
   fi
 
   confirm_restart "enable userns-remap"
+  fix_dockremap_overlap
   backup="$(backup_config)"
   write_config apply
 
