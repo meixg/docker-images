@@ -9,6 +9,11 @@ if [ -n "$SSH_PUB_KEY" ]; then
     echo "SSH public key configured"
 fi
 
+# Host keys identify a running SSH server and must be unique per container,
+# rather than shared by every container built from the image.
+echo "Generating missing SSH host keys..."
+ssh-keygen -A
+
 # 启动 SSH 服务
 echo "Validating SSH configuration..."
 /usr/sbin/sshd -t
