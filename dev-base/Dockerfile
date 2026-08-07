@@ -73,11 +73,45 @@ RUN set -eu; \
     node -v && \
     npm -v
 
+# TEMPORARY: Patch vulnerable dependencies bundled with npm until the Node.js
+# distribution includes fixed versions. The guard intentionally fails the build
+# once either upstream dependency is fixed, so this block cannot become a silent,
+# permanent override. npm verifies the registry tarballs before unpacking.
+RUN set -eu; \
+    TMP_DIR="$(mktemp -d)"; \
+    require_temporary_patch() { \
+        PACKAGE_NAME="$1"; \
+        FIXED_VERSION="$2"; \
+        CURRENT_VERSION="$(node -p "require('/usr/local/lib/node_modules/npm/node_modules/${PACKAGE_NAME}/package.json').version")"; \
+        node -e "const semver = require('/usr/local/lib/node_modules/npm/node_modules/semver'); if (semver.gte(process.argv[1], process.argv[2])) { console.error('Temporary npm patch for ' + process.argv[3] + ' is obsolete; remove it from dev-base/Dockerfile'); process.exit(1); }" \
+            "${CURRENT_VERSION}" "${FIXED_VERSION}" "${PACKAGE_NAME}"; \
+    }; \
+    require_temporary_patch brace-expansion 5.0.9; \
+    require_temporary_patch ip-address 10.3.1; \
+    npm pack brace-expansion@5.0.9 --pack-destination "${TMP_DIR}" >/dev/null; \
+    npm pack ip-address@10.3.1 --pack-destination "${TMP_DIR}" >/dev/null; \
+    rm -rf \
+        /usr/local/lib/node_modules/npm/node_modules/brace-expansion \
+        /usr/local/lib/node_modules/npm/node_modules/ip-address; \
+    mkdir -p \
+        /usr/local/lib/node_modules/npm/node_modules/brace-expansion \
+        /usr/local/lib/node_modules/npm/node_modules/ip-address; \
+    tar -xzf "${TMP_DIR}/brace-expansion-5.0.9.tgz" \
+        -C /usr/local/lib/node_modules/npm/node_modules/brace-expansion \
+        --strip-components=1; \
+    tar -xzf "${TMP_DIR}/ip-address-10.3.1.tgz" \
+        -C /usr/local/lib/node_modules/npm/node_modules/ip-address \
+        --strip-components=1; \
+    test "$(node -p "require('/usr/local/lib/node_modules/npm/node_modules/brace-expansion/package.json').version")" = "5.0.9"; \
+    test "$(node -p "require('/usr/local/lib/node_modules/npm/node_modules/ip-address/package.json').version")" = "10.3.1"; \
+    rm -rf "${TMP_DIR}" /root/.npm
+
 # 6. 安装 Claude Code 和 OpenCode
 RUN npm install -g pnpm @anthropic-ai/claude-code opencode-ai && \
     pnpm --version && \
     claude --version && \
-    opencode --version
+    opencode --version && \
+    npm cache clean --force
 
 # 7. 配置 SSH 安全加固
 COPY sshd_config.d/10-hardening.conf /etc/ssh/sshd_config.d/
