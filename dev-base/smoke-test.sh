@@ -16,7 +16,14 @@ trap cleanup EXIT
 ssh-keygen -q -t ed25519 -N '' -f "${tmpdir}/id_ed25519" >/dev/null
 ssh_pub_key="$(tr -d '\n' < "${tmpdir}/id_ed25519.pub")"
 
-docker run --rm --entrypoint /usr/sbin/sshd "${image_ref}" -t
+docker run --rm --entrypoint sh "${image_ref}" -eu -c '
+  baked_host_keys="$(find /etc/ssh -maxdepth 1 -type f -name "ssh_host_*_key" -print)"
+  if [ -n "${baked_host_keys}" ]; then
+    echo "SSH host private keys must not be baked into the image:" >&2
+    echo "${baked_host_keys}" >&2
+    exit 1
+  fi
+'
 
 docker run -d \
   --name "${container_name}" \

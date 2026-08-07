@@ -6,6 +6,7 @@ ARG OH_MY_ZSH_COMMIT=677a4592b18c08ddea737f8aca70bac0e9fc9313
 RUN apt-get update && apt-get install -y \
     ca-certificates openssh-server sudo curl git vim wget build-essential zsh tmux xz-utils \
     && mkdir -p /var/run/sshd \
+    && rm -f /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -83,8 +84,7 @@ COPY sshd_config.d/10-hardening.conf /etc/ssh/sshd_config.d/
 RUN mkdir -p /home/dev/.ssh && \
     chown -R dev:dev /home/dev/.ssh && \
     chmod 700 /home/dev/.ssh && \
-    chmod 644 /etc/ssh/sshd_config.d/10-hardening.conf && \
-    sshd -t
+    chmod 644 /etc/ssh/sshd_config.d/10-hardening.conf
 
 # 8. 复制启动脚本
 COPY entrypoint.sh /entrypoint.sh
