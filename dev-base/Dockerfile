@@ -1,5 +1,5 @@
-# Refresh this pinned digest periodically to pick up new Ubuntu 24.04 security updates.
-FROM ubuntu:24.04@sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90
+# Refresh this pinned digest when Ubuntu publishes updated 24.04 security fixes.
+FROM ubuntu:24.04@sha256:224a1869083a311ef3f13648a154ba79832fbef6364d31493642ca03082da254
 ARG OH_MY_ZSH_COMMIT=677a4592b18c08ddea737f8aca70bac0e9fc9313
 
 # 1. 安装基础开发工具
