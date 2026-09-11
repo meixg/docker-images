@@ -19,7 +19,7 @@
 │   ├── Dockerfile
 │   ├── entrypoint.sh
 │   └── README.md                # 详细文档
-├── CLAUDE.md                    # Claude Code 使用指南
+├── CLAUDE.md                    # AI agent 使用指南兼容入口
 └── README.md
 ```
 
@@ -34,8 +34,9 @@
 - 开发工具：git, vim, tmux, curl, wget, build-essential
 - 最新官方 Node.js 二进制（GPG 验证清单 + SHA256 校验）+ 全局安装的 pnpm
 - Zsh with Oh My Zsh
-- Claude Code CLI
+- Codex CLI
 - OpenCode CLI
+- Pi CLI
 
 **快速开始**：
 ```bash
@@ -61,7 +62,7 @@ ssh -p 2222 dev@<desktop-magicdns-hostname>
 基于 `dev-base` 的 Paseo 守护进程镜像，提供开箱即用的 Paseo 服务器。
 
 **主要特性**：
-- 继承 dev-base 的所有开发工具（git, vim, tmux, Node.js, pnpm, Claude Code, OpenCode）
+- 继承 dev-base 的所有开发工具（git, vim, tmux, Node.js, pnpm, Codex, OpenCode, Pi）
 - 预装 Paseo CLI 和 Server（从 npm 安装）
 - Paseo Web UI（默认端口 6767）
 - 无 SSH，只运行 Paseo 守护进程

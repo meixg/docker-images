@@ -1,7 +1,7 @@
 # dev-paseo
 
 Paseo daemon container built on top of the `dev-base` image. Provides a
-ready-to-run Paseo server with Claude Code, OpenCode, and a full development
+ready-to-run Paseo server with Codex, OpenCode, Pi, and a full development
 toolchain.
 
 ## Features
@@ -13,8 +13,9 @@ All features from [dev-base](../dev-base/) are inherited:
 - **Node.js**: Latest official binary with signed manifest verification (amd64/arm64)
 - **Package Manager**: pnpm (installed globally)
 - **Shell**: Zsh with Oh My Zsh framework
-- **Claude Code**: Pre-installed CLI
+- **Codex**: Pre-installed CLI
 - **OpenCode**: Pre-installed CLI
+- **Pi**: Pre-installed CLI
 
 Additional features in this image:
 

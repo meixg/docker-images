@@ -54,7 +54,8 @@ docker exec "${container_name}" su - dev -c '
     pnpm --version >/dev/null &&
     zsh --version >/dev/null &&
     tmux -V >/dev/null &&
-    claude --version >/dev/null &&
+    codex --version >/dev/null &&
+    pi --version >/dev/null &&
     opencode --version >/dev/null
   "
 '

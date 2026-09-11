@@ -6,7 +6,6 @@ ENV HOME=/home/dev \
     PASEO_WEB_UI_ENABLED=true \
     PASEO_LOG_FORMAT=json \
     PASEO_LOG_LEVEL=info \
-    CLAUDE_CONFIG_DIR=/home/dev/.claude \
     CODEX_HOME=/home/dev/.codex \
     XDG_CONFIG_HOME=/home/dev/.config \
     XDG_DATA_HOME=/home/dev/.local/share \
@@ -26,8 +25,8 @@ RUN npm install -g @getpaseo/cli @getpaseo/server && \
 
 RUN mkdir -p \
     /home/dev/.paseo \
-    /home/dev/.claude \
     /home/dev/.codex \
+    /home/dev/.pi/agent \
     /home/dev/.config \
     /home/dev/.local/share \
     /home/dev/.local/state \
