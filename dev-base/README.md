@@ -11,15 +11,16 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 - **Package Manager**: pnpm (installed globally)
 - **Shell**: Zsh with Oh My Zsh framework
 - **User**: `dev` user with sudo privileges
-- **Claude Code**: Pre-installed CLI
+- **Codex**: Pre-installed CLI
 - **OpenCode**: Pre-installed CLI
+- **Pi**: Pre-installed CLI
 
-Node.js, `pnpm`, Claude Code, and OpenCode are preinstalled during the image
+Node.js, `pnpm`, Codex, OpenCode, and Pi are preinstalled during the image
 build so they are immediately available in SSH sessions. The Dockerfile
 authenticates the latest Node.js release manifest with tracked release keys
-before verifying the downloaded archive checksum. `pnpm`, Claude Code, and
-OpenCode are installed from npm over HTTPS and follow npm's standard registry
-trust model rather than the extra signed-manifest flow used for Node.js.
+before verifying the downloaded archive checksum. `pnpm`, Codex, OpenCode, and
+Pi are installed from npm over HTTPS and follow npm's standard registry trust
+model rather than the extra signed-manifest flow used for Node.js.
 
 ## Usage
 
@@ -233,7 +234,7 @@ Then set a password for the `dev` user.
 
 ## Dependency Update Policy
 
-Node.js, pnpm, Claude Code, and OpenCode are intentionally installed without
+Node.js, pnpm, Codex, OpenCode, and Pi are intentionally installed without
 fixed version numbers. A clean image build picks up their latest available
 releases. The Node.js archive is verified against the latest upstream
 `SHASUMS256.txt.asc` manifest after that manifest is authenticated with the
@@ -279,7 +280,7 @@ ssh -p 2222 dev@<desktop-magicdns-hostname>
 
 - CI builds a local `dev-base` smoke-test image before publishing and runs `sshd -t`.
 - The smoke test starts the container, verifies the hardened SSH configuration, checks that `sshd` stays alive, and confirms public-key login works while root and password logins fail.
-- CI also verifies the preinstalled `node`, `pnpm`, `zsh`, `tmux`, `claude`, and `opencode` commands.
+- CI also verifies the preinstalled `node`, `pnpm`, `zsh`, `tmux`, `codex`, `pi`, and `opencode` commands.
 - Trivy scans the image for `HIGH` and `CRITICAL` OS and application vulnerabilities before publish; any non-waived finding fails the workflow.
 - Temporary Trivy waivers must be recorded in `.trivyignore.yaml` with the vulnerability ID and a justification.
 - Published images include an SBOM attestation and GitHub build provenance attestation in GHCR.

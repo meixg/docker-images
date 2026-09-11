@@ -73,10 +73,12 @@ RUN set -eu; \
     node -v && \
     npm -v
 
-# 6. 安装 Claude Code 和 OpenCode
-RUN npm install -g pnpm @anthropic-ai/claude-code opencode-ai && \
+# 6. 安装 Codex、OpenCode 和 Pi
+RUN npm install -g pnpm @openai/codex opencode-ai && \
+    npm install -g --ignore-scripts @earendil-works/pi-coding-agent && \
     pnpm --version && \
-    claude --version && \
+    codex --version && \
+    pi --version && \
     opencode --version && \
     npm cache clean --force
 

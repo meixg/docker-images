@@ -7,7 +7,6 @@ set -euo pipefail
 : "${PASEO_WEB_UI_ENABLED:=true}"
 : "${PASEO_LOG_LEVEL:=info}"
 : "${PASEO_LOG_FORMAT:=json}"
-: "${CLAUDE_CONFIG_DIR:=${HOME}/.claude}"
 : "${CODEX_HOME:=${HOME}/.codex}"
 : "${XDG_CONFIG_HOME:=${HOME}/.config}"
 : "${XDG_DATA_HOME:=${HOME}/.local/share}"
@@ -20,7 +19,6 @@ export PASEO_LISTEN
 export PASEO_WEB_UI_ENABLED
 export PASEO_LOG_LEVEL
 export PASEO_LOG_FORMAT
-export CLAUDE_CONFIG_DIR
 export CODEX_HOME
 export XDG_CONFIG_HOME
 export XDG_DATA_HOME
@@ -34,8 +32,8 @@ ensure_dir() {
 
 ensure_dir "$HOME"
 ensure_dir "$PASEO_HOME"
-ensure_dir "$CLAUDE_CONFIG_DIR"
 ensure_dir "$CODEX_HOME"
+ensure_dir "${HOME}/.pi/agent"
 ensure_dir "$XDG_CONFIG_HOME"
 ensure_dir "$XDG_DATA_HOME"
 ensure_dir "$XDG_STATE_HOME"
