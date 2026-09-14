@@ -4,4 +4,18 @@
 # vulnerabilities:
 #   - id: CVE-2024-12345
 #     statement: "Pending upstream fix; tracked in meixg/docker-images#123"
-vulnerabilities: []
+vulnerabilities:
+  - id: CVE-2026-56864
+    statement: >-
+      GitHub CLI v2.100.0 is the latest official release. Trivy detects the
+      indirectly embedded golang.org/x/mod v0.39.0 in the prebuilt gh binary;
+      the affected module-proxy/checksum verification path is not used by gh.
+      Remove this waiver when an official gh release includes x/mod v0.40.0 or
+      later.
+  - id: CVE-2026-56865
+    statement: >-
+      GitHub CLI v2.100.0 is the latest official release. Trivy detects the
+      indirectly embedded golang.org/x/mod v0.39.0 in the prebuilt gh binary;
+      the affected module-proxy/checksum verification path is not used by gh.
+      Remove this waiver when an official gh release includes x/mod v0.40.0 or
+      later.
