@@ -31,7 +31,7 @@
 
 **主要特性**：
 - OpenSSH 服务器（仅支持公钥认证）
-- 开发工具：git, vim, tmux, curl, wget, build-essential
+- 开发工具：git, vim, tmux, curl, wget, build-essential, GitHub CLI (`gh`)
 - 最新官方 Node.js 二进制（GPG 验证清单 + SHA256 校验）+ 全局安装的 pnpm
 - Zsh with Oh My Zsh
 - Codex CLI

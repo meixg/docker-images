@@ -6,7 +6,7 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 
 - **Base OS**: Ubuntu 24.04 LTS
 - **SSH Server**: OpenSSH with key-based authentication only
-- **Development Tools**: git, vim, tmux, curl, wget, build-essential
+- **Development Tools**: git, vim, tmux, curl, wget, build-essential, GitHub CLI (`gh`)
 - **Node.js**: Latest official binary with signed manifest verification (amd64/arm64)
 - **Package Manager**: pnpm (installed globally)
 - **Shell**: Zsh with Oh My Zsh framework
@@ -15,12 +15,14 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 - **OpenCode**: Pre-installed CLI
 - **Pi**: Pre-installed CLI
 
-Node.js, `pnpm`, Codex, OpenCode, and Pi are preinstalled during the image
+Node.js, `pnpm`, GitHub CLI (`gh`), Codex, OpenCode, and Pi are preinstalled during the image
 build so they are immediately available in SSH sessions. The Dockerfile
 authenticates the latest Node.js release manifest with tracked release keys
 before verifying the downloaded archive checksum. `pnpm`, Codex, OpenCode, and
 Pi are installed from npm over HTTPS and follow npm's standard registry trust
-model rather than the extra signed-manifest flow used for Node.js.
+model rather than the extra signed-manifest flow used for Node.js. GitHub CLI is
+installed from GitHub's official Debian repository; its archive keyring is
+verified with a tracked SHA256 checksum before `apt` uses it.
 
 ## Usage
 

@@ -2,13 +2,26 @@
 FROM ubuntu:24.04@sha256:224a1869083a311ef3f13648a154ba79832fbef6364d31493642ca03082da254
 ARG OH_MY_ZSH_COMMIT=677a4592b18c08ddea737f8aca70bac0e9fc9313
 
-# 1. 安装基础开发工具
-RUN apt-get update && apt-get install -y \
-    ca-certificates openssh-server sudo curl git vim wget build-essential zsh tmux xz-utils \
-    && mkdir -p /var/run/sshd \
-    && rm -f /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# 1. 安装基础开发工具和 GitHub CLI
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+    ca-certificates openssh-server sudo curl git vim wget build-essential zsh tmux xz-utils; \
+    install -d -m 0755 /etc/apt/keyrings /etc/apt/sources.list.d; \
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+        -o /etc/apt/keyrings/githubcli-archive-keyring.gpg; \
+    echo "6084d5d7bd8e288441e0e94fc6275570895da18e6751f70f057485dc2d1a811b  /etc/apt/keyrings/githubcli-archive-keyring.gpg" \
+        | sha256sum -c -; \
+    chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg; \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+        > /etc/apt/sources.list.d/github-cli.list; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends gh; \
+    gh --version; \
+    mkdir -p /var/run/sshd; \
+    rm -f /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*
 
 # 2. 创建开发用户
 RUN useradd -m -s /bin/bash dev && \
