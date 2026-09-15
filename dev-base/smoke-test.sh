@@ -51,6 +51,8 @@ done
 docker exec "${container_name}" su - dev -c '
   zsh -lc "
     node --version >/dev/null &&
+    python3 --version >/dev/null &&
+    go version >/dev/null &&
     pnpm --version >/dev/null &&
     zsh --version >/dev/null &&
     tmux -V >/dev/null &&
