@@ -138,8 +138,6 @@ docker build -t dev-base .
 cd dev-paseo
 docker build -t dev-paseo .
 
-# 检查 entrypoint 语法及 Paseo 普通 terminal 使用的默认 shell
-bash ./smoke-test.sh dev-paseo
 ```
 
 `dev-paseo` 镜像显式设置 `SHELL=/bin/zsh`。Paseo 创建普通 terminal

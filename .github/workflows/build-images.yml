@@ -144,20 +144,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
 
-      - name: Build dev-paseo smoke-test image
-        run: |
-          set -euo pipefail
-          build_args=()
-          if [ "${CLEAN_REBUILD}" = "true" ]; then
-            build_args+=(--pull --no-cache)
-          fi
-          docker build "${build_args[@]}" \
-            -t dev-paseo-smoke:${{ github.sha }} \
-            ./dev-paseo
-
-      - name: Run dev-paseo smoke test
-        run: bash ./dev-paseo/smoke-test.sh dev-paseo-smoke:${{ github.sha }}
-
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:

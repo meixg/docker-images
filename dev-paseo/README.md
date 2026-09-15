@@ -141,9 +141,6 @@ docker build -t dev-paseo .
 # Run locally
 docker run -d --name dev-paseo -p 6767:6767 dev-paseo
 
-# Verify the entrypoint and default shell (also checks the final image environment)
-bash ./smoke-test.sh dev-paseo
-
 # Check health
 curl http://localhost:6767/api/health
 
