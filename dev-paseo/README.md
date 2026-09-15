@@ -22,9 +22,16 @@ Additional features in this image:
 - **Paseo Daemon**: `@getpaseo/cli` and `@getpaseo/server` installed from npm
 - **Web UI**: Paseo web interface enabled by default on port 6767
 - **User**: Runs as the `dev` user (UID 1000)
+- **Default shell**: `/bin/zsh` is exported in the daemon environment
 
 Unlike `dev-base`, this image does **not** run SSH. It starts the Paseo server
 as the single foreground process under `tini`.
+
+The image sets `SHELL=/bin/zsh` explicitly because Paseo's ordinary terminal
+creation path does not send a command or arguments. The server then resolves
+the shell from its environment, so relying only on the `dev` user's login
+shell (`/etc/passwd`) is not sufficient. Docker Compose and `docker run` may
+still explicitly override `SHELL` when a different shell is required.
 
 ## Usage
 
@@ -88,6 +95,7 @@ docker exec -it dev-paseo paseo agent list
 
 | Variable | Default | Description |
 |---|---|---|
+| `SHELL` | `/bin/zsh` | Default shell for Paseo terminals that do not specify a command |
 | `PASEO_HOME` | `/home/dev/.paseo` | Paseo data directory |
 | `PASEO_LISTEN` | `0.0.0.0:6767` | Listen address and port |
 | `PASEO_WEB_UI_ENABLED` | `true` | Enable/disable the web UI |

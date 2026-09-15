@@ -137,7 +137,13 @@ docker build -t dev-base .
 # 构建 dev-paseo（依赖 dev-base:latest）
 cd dev-paseo
 docker build -t dev-paseo .
+
 ```
+
+`dev-paseo` 镜像显式设置 `SHELL=/bin/zsh`。Paseo 创建普通 terminal
+时不会传递 command/args，daemon 会从环境变量解析默认 shell；仅依赖
+`dev` 用户在 `/etc/passwd` 中的登录 shell 会回退到 `/bin/sh`。Compose
+或 `docker run` 仍可通过显式设置 `SHELL` 覆盖这个默认值。
 
 ## 构建触发与例行重建
 
