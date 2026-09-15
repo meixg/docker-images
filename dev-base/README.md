@@ -6,7 +6,7 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 
 - **Base OS**: Ubuntu 24.04 LTS
 - **SSH Server**: OpenSSH with key-based authentication only
-- **Development Tools**: git, vim, tmux, curl, wget, build-essential, GitHub CLI (`gh`)
+- **Development Tools**: git, vim, tmux, curl, wget, build-essential, Python 3, Go, GitHub CLI (`gh`)
 - **Node.js**: Latest official binary with signed manifest verification (amd64/arm64)
 - **Package Manager**: pnpm (installed globally)
 - **Shell**: Zsh with Oh My Zsh framework

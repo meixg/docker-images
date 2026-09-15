@@ -2,11 +2,11 @@
 FROM ubuntu:24.04@sha256:224a1869083a311ef3f13648a154ba79832fbef6364d31493642ca03082da254
 ARG OH_MY_ZSH_COMMIT=677a4592b18c08ddea737f8aca70bac0e9fc9313
 
-# 1. 安装基础开发工具和 GitHub CLI
+# 1. 安装基础开发工具、Python、Go 和 GitHub CLI
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-    ca-certificates gnupg openssh-server sudo curl git vim wget build-essential zsh tmux xz-utils; \
+    ca-certificates gnupg openssh-server sudo curl git vim wget build-essential python3 golang-go zsh tmux xz-utils; \
     install -d -m 0755 /etc/apt/keyrings /etc/apt/sources.list.d; \
     curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
         -o /etc/apt/keyrings/githubcli-archive-keyring.gpg; \
