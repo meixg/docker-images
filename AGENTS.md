@@ -114,7 +114,7 @@ docker build -t <image-name> .
 docker run -d -p 2222:22 -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" dev-base
 
 # Connect to the container
-ssh -p 2222 dev@localhost
+ssh -p 2222 work@localhost
 ```
 
 ## Image Tags

@@ -10,7 +10,7 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 - **Node.js**: Latest official binary with signed manifest verification (amd64/arm64)
 - **Package Manager**: pnpm (installed globally)
 - **Shell**: Zsh with Oh My Zsh framework
-- **User**: `dev` user with sudo privileges
+- **User**: `work` user (UID/GID 1001) with `/home/work` as its home and sudo privileges
 - **Codex**: Pre-installed CLI
 - **OpenCode**: Pre-installed CLI
 - **Pi**: Pre-installed CLI
@@ -35,13 +35,15 @@ docker pull ghcr.io/meixg/docker-images/dev-base:latest
 # Run with SSH access
 # Container name is optional, helps with management (e.g., docker stop dev-base)
 export TAILSCALE_IP="$(tailscale ip -4)"
+mkdir -p "${HOME}/docker-homes/dev-base"
 docker run -d -p "${TAILSCALE_IP}:2222:22" \
   --name dev-base \
   -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" \
+  -v "${HOME}/docker-homes/dev-base:/home/work" \
   ghcr.io/meixg/docker-images/dev-base:latest
 
 # Connect from the tailnet through the desktop's MagicDNS hostname
-ssh -p 2222 dev@<desktop-magicdns-hostname>
+ssh -p 2222 work@<desktop-magicdns-hostname>
 ```
 
 ### Docker Compose
@@ -58,11 +60,13 @@ cd dev-base
 # Start the container
 export TAILSCALE_IP="$(tailscale ip -4)"
 export SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)"
+export DOCKER_HOMES_ROOT="${HOME}/docker-homes"
+mkdir -p "${DOCKER_HOMES_ROOT}/dev-base"
 docker compose up -d
 
 # Connect over SSH from a device in the same tailnet. The MagicDNS hostname is
 # used by the client; Compose binds the corresponding Tailscale IP address.
-ssh -p 2222 dev@<desktop-magicdns-hostname>
+ssh -p 2222 work@<desktop-magicdns-hostname>
 ```
 
 Verify that Docker published the port only on the Tailscale address, then inspect
@@ -81,7 +85,7 @@ new Tailscale IP, recreate the service after refreshing `TAILSCALE_IP`.
 
 ### Environment Variables
 
-- `SSH_PUB_KEY` - SSH public key for `dev` user (required)
+- `SSH_PUB_KEY` - SSH public key for `work` user (required)
 - `TAILSCALE_IP` - desktop's Tailscale IPv4 address, normally from
   `tailscale ip -4` (required by Compose)
 
@@ -136,10 +140,12 @@ it makes existing images, containers, and volumes temporarily invisible because
 Docker uses a remapped storage area; it does not delete them. Disabling it makes
 objects created under remapping unavailable and makes the older non-remapped
 objects visible again. Re-pull or rebuild the image and recreate `dev-base`.
-Bind-mount ownership, `--network=host`,
-`--pid=host`, `--privileged`, and some volume drivers also have user-namespace
-compatibility constraints. This repository's no-volume setup avoids the usual
-bind-mount ownership issue.
+Bind-mount ownership, `--network=host`, `--pid=host`, `--privileged`, and some
+volume drivers also have user-namespace compatibility constraints. The
+`~/docker-homes/dev-base` source must be writable by the remapped form of
+container UID/GID `1001:1001`; preserve the ownership of a working directory
+when relocating it, and prepare newly-created sources for the active mapping
+before starting Compose.
 
 The script refuses to overwrite or remove a custom `userns-remap` mapping and
 does nothing when Docker is already running in rootless mode. In a non-interactive
@@ -200,7 +206,7 @@ The SSH server is configured with the following security measures:
 | `PasswordAuthentication` | `no` | Only allow public key authentication |
 | `KbdInteractiveAuthentication` | `no` | Disable keyboard-interactive authentication |
 | `PermitRootLogin` | `no` | Disable root SSH access |
-| `AllowUsers` | `dev` | Only allow dev user to login |
+| `AllowUsers` | `work` | Only allow the work user to log in |
 | `MaxAuthTries` | `3` | Limit authentication attempts |
 | `ClientAliveInterval` | `300` | Check connection every 5 minutes |
 | `ClientAliveCountMax` | `2` | Disconnect after 10 min timeout |
@@ -211,7 +217,7 @@ These settings are applied via `/etc/ssh/sshd_config.d/10-hardening.conf`, and t
 
 ### NOPASSWD Sudo Trade-off
 
-**Configuration**: The `dev` user has passwordless sudo access (`NOPASSWD:ALL`).
+**Configuration**: The `work` user has passwordless sudo access (`NOPASSWD:ALL`).
 
 **Justification**:
 - This is a **personal development environment**, not a production server
@@ -228,11 +234,11 @@ These settings are applied via `/etc/ssh/sshd_config.d/10-hardening.conf`, and t
 If you require sudo password authentication, modify the Dockerfile:
 ```dockerfile
 # Change from:
-echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+echo "work ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/work
 # To:
-echo "dev ALL=(ALL) ALL" >> /etc/sudoers
+echo "work ALL=(ALL) ALL" > /etc/sudoers.d/work
 ```
-Then set a password for the `dev` user.
+Then set a password for the `work` user.
 
 ## Dependency Update Policy
 
@@ -265,10 +271,11 @@ docker build -t dev-base .
 export TAILSCALE_IP="$(tailscale ip -4)"
 docker run -d -p "${TAILSCALE_IP}:2222:22" \
   --name dev-base \
-  -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" dev-base
+  -e SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" \
+  -v "${HOME}/docker-homes/dev-base:/home/work" dev-base
 
 # Connect
-ssh -p 2222 dev@<desktop-magicdns-hostname>
+ssh -p 2222 work@<desktop-magicdns-hostname>
 ```
 
 ## Image Rebuild Policy
@@ -290,4 +297,4 @@ ssh -p 2222 dev@<desktop-magicdns-hostname>
 ## Container User
 
 The container runs as `root` (required for SSH server to bind port 22).
-All SSH login sessions are as the `dev` user.
+All SSH login sessions are as the `work` user, whose home is `/home/work`.

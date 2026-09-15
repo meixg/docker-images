@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${HOME:=/home/dev}"
+: "${HOME:=/home/work}"
 : "${PASEO_HOME:=${HOME}/.paseo}"
 : "${PASEO_LISTEN:=0.0.0.0:6767}"
 : "${PASEO_WEB_UI_ENABLED:=true}"
@@ -31,6 +31,11 @@ ensure_dir() {
 }
 
 ensure_dir "$HOME"
+if [ ! -e "${HOME}/.zshrc" ]; then
+  install -m 644 /etc/skel/.zshrc "${HOME}/.zshrc"
+fi
+ensure_dir "${HOME}/.ssh"
+chmod 700 "${HOME}/.ssh"
 ensure_dir "$PASEO_HOME"
 ensure_dir "$CODEX_HOME"
 ensure_dir "${HOME}/.pi/agent"

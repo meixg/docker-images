@@ -142,7 +142,7 @@ README、Compose 文件或安全配置脚本，只能根据宿主机和运行中
 - `passwordauthentication no`
 - `kbdinteractiveauthentication no`
 - `permitrootlogin no`
-- `allowusers` 仅包含 `dev`
+- `allowusers` 仅包含 `work`
 - `maxauthtries 3`
 - `x11forwarding no`
 - `allowtcpforwarding no`
@@ -228,7 +228,7 @@ INPUT/FORWARD 规则共同判断，不能单独作为 PASS 依据。
 从另一台已授权 Tailnet 设备执行：
 
 ```bash
-ssh -p 2222 dev@<desktop-magicdns-hostname>
+ssh -p 2222 work@<desktop-magicdns-hostname>
 ```
 
 预期：

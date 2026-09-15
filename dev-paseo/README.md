@@ -21,7 +21,7 @@ Additional features in this image:
 
 - **Paseo Daemon**: `@getpaseo/cli` and `@getpaseo/server` installed from npm
 - **Web UI**: Paseo web interface enabled by default on port 6767
-- **User**: Runs as the `dev` user (UID 1000)
+- **User**: Runs as the `work` user (UID/GID 1001, home `/home/work`)
 - **Default shell**: `/bin/zsh` is exported in the daemon environment
 
 Unlike `dev-base`, this image does **not** run SSH. It starts the Paseo server
@@ -29,7 +29,7 @@ as the single foreground process under `tini`.
 
 The image sets `SHELL=/bin/zsh` explicitly because Paseo's ordinary terminal
 creation path does not send a command or arguments. The server then resolves
-the shell from its environment, so relying only on the `dev` user's login
+the shell from its environment, so relying only on the `work` user's login
 shell (`/etc/passwd`) is not sufficient. Docker Compose and `docker run` may
 still explicitly override `SHELL` when a different shell is required.
 
@@ -42,10 +42,11 @@ still explicitly override `SHELL` when a different shell is required.
 docker pull ghcr.io/meixg/docker-images/dev-paseo:latest
 
 # Run with Paseo web UI on port 6767
+mkdir -p "${HOME}/docker-homes/dev-paseo"
 docker run -d \
   --name dev-paseo \
   -p 6767:6767 \
-  -v dev-paseo-home:/home/dev \
+  -v "${HOME}/docker-homes/dev-paseo:/home/work" \
   ghcr.io/meixg/docker-images/dev-paseo:latest
 ```
 
@@ -54,7 +55,8 @@ Paseo starts listening on `0.0.0.0:6767` with the web UI enabled. Open
 
 ### Docker Compose
 
-Create a `compose.yaml`:
+Use the included `compose.yaml`. It bind-mounts
+`${DOCKER_HOMES_ROOT}/dev-paseo` as the complete `/home/work`:
 
 ```yaml
 services:
@@ -64,17 +66,16 @@ services:
     ports:
       - "6767:6767"
     volumes:
-      - dev-paseo-home:/home/dev
+      - "${DOCKER_HOMES_ROOT:?Set DOCKER_HOMES_ROOT to an absolute host path}/dev-paseo:/home/work"
     environment:
       PASEO_PASSWORD: "${PASEO_PASSWORD:?Set PASEO_PASSWORD to a strong password}"
-
-volumes:
-  dev-paseo-home:
 ```
 
 ```bash
 # Start the container
 export PASEO_PASSWORD="your-strong-password"
+export DOCKER_HOMES_ROOT="${HOME}/docker-homes"
+mkdir -p "${DOCKER_HOMES_ROOT}/dev-paseo"
 docker compose up -d
 
 # View logs
@@ -96,7 +97,7 @@ docker exec -it dev-paseo paseo agent list
 | Variable | Default | Description |
 |---|---|---|
 | `SHELL` | `/bin/zsh` | Default shell for Paseo terminals that do not specify a command |
-| `PASEO_HOME` | `/home/dev/.paseo` | Paseo data directory |
+| `PASEO_HOME` | `/home/work/.paseo` | Paseo data directory |
 | `PASEO_LISTEN` | `0.0.0.0:6767` | Listen address and port |
 | `PASEO_WEB_UI_ENABLED` | `true` | Enable/disable the web UI |
 | `PASEO_LOG_LEVEL` | `info` | Log level (trace/debug/info/warn/error) |
@@ -108,14 +109,15 @@ logs a warning. Always set `PASEO_PASSWORD` for network-reachable deployments.
 
 ## Data Persistence
 
-Mount `/home/dev` as a volume to persist Paseo data (agent registries, workspaces,
-schedules, and configuration) across container restarts:
+Bind-mount `${HOME}/docker-homes/dev-paseo` at `/home/work` to persist the
+complete user home, including Paseo state, provider credentials, SSH files, and
+repositories:
 
 ```bash
 docker run -d \
   --name dev-paseo \
   -p 6767:6767 \
-  -v dev-paseo-home:/home/dev \
+  -v "${HOME}/docker-homes/dev-paseo:/home/work" \
   -e PASEO_PASSWORD="your-strong-password" \
   ghcr.io/meixg/docker-images/dev-paseo:latest
 ```
@@ -127,7 +129,9 @@ docker run -d \
   control connections from any client that can reach it.
 - **No SSH**: Unlike `dev-base`, this image does not start an SSH server.
   Paseo's own TLS+authentication layer is the primary access control.
-- **Non-root**: The Paseo daemon runs as the `dev` user (UID 1000).
+- **Non-root**: The Paseo daemon runs as the `work` user (UID/GID 1001).
+- **Sensitive home**: `/home/work` can contain SSH keys and provider credentials;
+  protect the bind-mounted host directory and its backups.
 - **Init Process**: `tini` is used as PID 1 for proper signal forwarding and
   zombie process reaping.
 
@@ -137,6 +141,11 @@ docker run -d \
 # Build locally
 cd dev-paseo
 docker build -t dev-paseo .
+
+# Validate against a locally-built dev-base candidate
+docker build \
+  --build-arg DEV_BASE_IMAGE=dev-base-work-home:test \
+  -t dev-paseo-work-home:test .
 
 # Run locally
 docker run -d --name dev-paseo -p 6767:6767 dev-paseo
@@ -164,5 +173,5 @@ docker stop dev-paseo && docker rm dev-paseo
 
 ## Container User
 
-The container runs as the `dev` user (UID 1000). The `tini` init process and the
+The container runs as the `work` user (UID/GID 1001). The `tini` init process and the
 Paseo server both execute under this user.

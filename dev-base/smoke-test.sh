@@ -43,12 +43,20 @@ docker exec "${container_name}" pgrep -x sshd >/dev/null
 for expected in \
   "passwordauthentication no" \
   "permitrootlogin no" \
-  "allowusers dev" \
+  "allowusers work" \
   "maxauthtries 3"; do
   docker exec "${container_name}" sh -lc "sshd -T | grep -qx '${expected}'"
 done
 
-docker exec "${container_name}" su - dev -c '
+docker exec "${container_name}" sh -ceu '
+  test "$(id -u work)" = 1001
+  test "$(id -g work)" = 1001
+  test "$(getent passwd work | cut -d: -f6)" = /home/work
+  ! getent passwd dev >/dev/null
+'
+
+docker exec "${container_name}" su - work -c '
+  test "$HOME" = /home/work
   zsh -lc "
     node --version >/dev/null &&
     python3 --version >/dev/null &&
@@ -71,7 +79,7 @@ ssh_options=(
   -o LogLevel=ERROR
 )
 
-ssh "${ssh_options[@]}" dev@127.0.0.1 'echo connected >/dev/null'
+ssh "${ssh_options[@]}" work@127.0.0.1 'test "$HOME" = /home/work'
 
 if ssh "${ssh_options[@]}" root@127.0.0.1 true; then
   echo "root login unexpectedly succeeded" >&2
@@ -86,7 +94,7 @@ if ssh \
   -o StrictHostKeyChecking=no \
   -o UserKnownHostsFile=/dev/null \
   -o LogLevel=ERROR \
-  dev@127.0.0.1 true; then
+  work@127.0.0.1 true; then
   echo "password authentication unexpectedly succeeded" >&2
   exit 1
 fi
