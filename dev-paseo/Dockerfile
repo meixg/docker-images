@@ -1,9 +1,11 @@
 ARG DEV_BASE_IMAGE=ghcr.io/meixg/docker-images/dev-base:latest
 FROM ${DEV_BASE_IMAGE}
 
+# Paseo uses env.SHELL when a terminal request does not include command/args.
 ENV USER=work \
     LOGNAME=work \
     HOME=/home/work \
+    SHELL=/bin/zsh \
     PASEO_HOME=/home/work/.paseo \
     PASEO_LISTEN=0.0.0.0:6767 \
     PASEO_WEB_UI_ENABLED=true \
