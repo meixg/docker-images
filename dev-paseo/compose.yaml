@@ -1,0 +1,11 @@
+services:
+  dev-paseo:
+    image: ghcr.io/meixg/docker-images/dev-paseo:latest
+    container_name: dev-paseo
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6767:6767"
+    environment:
+      PASEO_PASSWORD: "${PASEO_PASSWORD:?Set PASEO_PASSWORD to a strong password}"
+    volumes:
+      - "${DOCKER_HOMES_ROOT:?Set DOCKER_HOMES_ROOT to an absolute host path}/dev-paseo:/home/work"

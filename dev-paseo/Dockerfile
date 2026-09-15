@@ -1,16 +1,19 @@
-FROM ghcr.io/meixg/docker-images/dev-base:latest
+ARG DEV_BASE_IMAGE=ghcr.io/meixg/docker-images/dev-base:latest
+FROM ${DEV_BASE_IMAGE}
 
-ENV HOME=/home/dev \
-    PASEO_HOME=/home/dev/.paseo \
+ENV USER=work \
+    LOGNAME=work \
+    HOME=/home/work \
+    PASEO_HOME=/home/work/.paseo \
     PASEO_LISTEN=0.0.0.0:6767 \
     PASEO_WEB_UI_ENABLED=true \
     PASEO_LOG_FORMAT=json \
     PASEO_LOG_LEVEL=info \
-    CODEX_HOME=/home/dev/.codex \
-    XDG_CONFIG_HOME=/home/dev/.config \
-    XDG_DATA_HOME=/home/dev/.local/share \
-    XDG_STATE_HOME=/home/dev/.local/state \
-    XDG_CACHE_HOME=/home/dev/.cache
+    CODEX_HOME=/home/work/.codex \
+    XDG_CONFIG_HOME=/home/work/.config \
+    XDG_DATA_HOME=/home/work/.local/share \
+    XDG_STATE_HOME=/home/work/.local/state \
+    XDG_CACHE_HOME=/home/work/.cache
 
 RUN apt-get update && apt-get install -y --no-install-recommends tini \
     && rm -rf /var/lib/apt/lists/*
@@ -24,21 +27,22 @@ RUN npm install -g @getpaseo/cli @getpaseo/server && \
     npm cache clean --force
 
 RUN mkdir -p \
-    /home/dev/.paseo \
-    /home/dev/.codex \
-    /home/dev/.pi/agent \
-    /home/dev/.config \
-    /home/dev/.local/share \
-    /home/dev/.local/state \
-    /home/dev/.cache && \
-    chown -R dev:dev /home/dev
+    /home/work/.paseo \
+    /home/work/.codex \
+    /home/work/.pi/agent \
+    /home/work/.config \
+    /home/work/.local/share \
+    /home/work/.local/state \
+    /home/work/.cache && \
+    chown -R work:work /home/work
 
 COPY entrypoint.sh /usr/local/bin/dev-paseo-entrypoint
 RUN chmod +x /usr/local/bin/dev-paseo-entrypoint
 
-USER dev
+USER work
+WORKDIR /home/work
 EXPOSE 6767
-VOLUME ["/home/dev"]
+VOLUME ["/home/work"]
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD node -e "const listen=process.env.PASEO_LISTEN||'0.0.0.0:6767'; const m=listen.match(/:(\\d+)$/); const port=m?Number(m[1]):6767; require('http').get({hostname:'127.0.0.1',port,path:'/api/health'},r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"

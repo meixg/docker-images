@@ -52,7 +52,7 @@ docker run -d -p "${TAILSCALE_IP}:2222:22" \
   ghcr.io/meixg/docker-images/dev-base:latest
 
 # 通过 Tailscale MagicDNS hostname 连接到容器
-ssh -p 2222 dev@<desktop-magicdns-hostname>
+ssh -p 2222 work@<desktop-magicdns-hostname>
 ```
 
 📖 **查看 [dev-base/README.md](dev-base/) 获取完整文档和安全配置说明**
@@ -66,7 +66,7 @@ ssh -p 2222 dev@<desktop-magicdns-hostname>
 - 预装 Paseo CLI 和 Server（从 npm 安装）
 - Paseo Web UI（默认端口 6767）
 - 无 SSH，只运行 Paseo 守护进程
-- 以 `dev` 用户运行，`tini` 作为 init 进程
+- 以 `work` 用户运行，Home 为 `/home/work`，`tini` 作为 init 进程
 
 **快速开始**：
 ```bash
@@ -74,10 +74,11 @@ ssh -p 2222 dev@<desktop-magicdns-hostname>
 docker pull ghcr.io/meixg/docker-images/dev-paseo:latest
 
 # 运行 Paseo 容器
+mkdir -p "${HOME}/docker-homes/dev-paseo"
 docker run -d \
   --name dev-paseo \
   -p 6767:6767 \
-  -v dev-paseo-home:/home/dev \
+  -v "${HOME}/docker-homes/dev-paseo:/home/work" \
   -e PASEO_PASSWORD="your-strong-password" \
   ghcr.io/meixg/docker-images/dev-paseo:latest
 

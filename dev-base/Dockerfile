@@ -23,24 +23,25 @@ RUN set -eux; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
-# 2. 创建开发用户
-RUN useradd -m -s /bin/bash dev && \
-    usermod -aG sudo dev && \
-    echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+# 2. 创建开发用户。固定 UID/GID，让 bind mount 的所有权契约保持稳定。
+RUN groupadd --gid 1001 work && \
+    useradd --uid 1001 --gid 1001 --create-home --home-dir /home/work --shell /bin/zsh work && \
+    usermod -aG sudo work && \
+    printf '%s\n' 'work ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/work && \
+    chmod 0440 /etc/sudoers.d/work && \
+    visudo -cf /etc/sudoers.d/work
 
 # 3. 安装 oh-my-zsh（固定 commit，避免执行远程安装脚本）
 # 升级方式：更新 OH_MY_ZSH_COMMIT 到目标 commit，并确认构建通过
-RUN git clone https://github.com/ohmyzsh/ohmyzsh.git /home/dev/.oh-my-zsh && \
-    cd /home/dev/.oh-my-zsh && \
+RUN git clone https://github.com/ohmyzsh/ohmyzsh.git /opt/oh-my-zsh && \
+    cd /opt/oh-my-zsh && \
     git checkout --detach "${OH_MY_ZSH_COMMIT}" && \
     test "$(git rev-parse HEAD)" = "${OH_MY_ZSH_COMMIT}" && \
-    rm -rf /home/dev/.oh-my-zsh/.git && \
-    chsh -s /bin/zsh dev && \
-    chown -R dev:dev /home/dev/.oh-my-zsh
+    rm -rf /opt/oh-my-zsh/.git
 
 # 4. 复制配置文件
-COPY .zshrc /home/dev/.zshrc
-RUN chown dev:dev /home/dev/.zshrc
+COPY .zshrc /etc/skel/.zshrc
+RUN install -o work -g work -m 0644 /etc/skel/.zshrc /home/work/.zshrc
 
 # 5. 安装最新版 Node.js 和 pnpm（官方二进制 + SHA256 校验）
 RUN set -eu; \
@@ -97,9 +98,9 @@ RUN npm install -g pnpm @openai/codex opencode-ai && \
 
 # 7. 配置 SSH 安全加固
 COPY sshd_config.d/10-hardening.conf /etc/ssh/sshd_config.d/
-RUN mkdir -p /home/dev/.ssh && \
-    chown -R dev:dev /home/dev/.ssh && \
-    chmod 700 /home/dev/.ssh && \
+RUN mkdir -p /home/work/.ssh && \
+    chown -R work:work /home/work/.ssh && \
+    chmod 700 /home/work/.ssh && \
     chmod 644 /etc/ssh/sshd_config.d/10-hardening.conf
 
 # 8. 复制启动脚本

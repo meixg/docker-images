@@ -8,6 +8,8 @@ services:
       - "${TAILSCALE_IP:?Set TAILSCALE_IP with: export TAILSCALE_IP=$(tailscale ip -4)}:2222:22"
     environment:
       SSH_PUB_KEY: "${SSH_PUB_KEY:?Set SSH_PUB_KEY to your SSH public key}"
+    volumes:
+      - "${DOCKER_HOMES_ROOT:?Set DOCKER_HOMES_ROOT to an absolute host path}/dev-base:/home/work"
     cap_drop:
       # Not a substitute for the host firewall, but removes raw-packet scanning.
       - NET_RAW
