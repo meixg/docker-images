@@ -1,6 +1,8 @@
 FROM ghcr.io/meixg/docker-images/dev-base:latest
 
+# Paseo uses env.SHELL when a terminal request does not include command/args.
 ENV HOME=/home/dev \
+    SHELL=/bin/zsh \
     PASEO_HOME=/home/dev/.paseo \
     PASEO_LISTEN=0.0.0.0:6767 \
     PASEO_WEB_UI_ENABLED=true \
