@@ -42,6 +42,7 @@ jobs:
           if [ "${CLEAN_REBUILD}" = "true" ]; then
             build_args+=(--pull --no-cache)
           fi
+          build_args+=(--build-arg "CLOUDFLARED_CACHE_BUST=${{ github.run_id }}")
           docker build "${build_args[@]}" \
             -t dev-base-smoke:${{ github.sha }} \
             ./dev-base
@@ -112,6 +113,8 @@ jobs:
           push: true
           pull: ${{ fromJSON(env.CLEAN_REBUILD) }}
           no-cache: ${{ fromJSON(env.CLEAN_REBUILD) }}
+          build-args: |
+            CLOUDFLARED_CACHE_BUST=${{ github.run_id }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

@@ -17,7 +17,10 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 
 Node.js, `pnpm`, GitHub CLI (`gh`), `cloudflared`, Codex, OpenCode, and Pi are
 preinstalled during the image build so they are immediately available in SSH sessions.
-It is installed from Cloudflare's official APT repository at a fixed version. The Dockerfile
+`cloudflared` is installed from Cloudflare's official APT repository without a
+version pin, so each image build uses the repository's latest release. CI passes
+a unique cache-bust value to ensure the installation layer is refreshed on every
+workflow run. The Dockerfile
 authenticates the latest Node.js release manifest with tracked release keys
 before verifying the downloaded archive checksum. `pnpm`, Codex, OpenCode, and
 Pi are installed from npm over HTTPS and follow npm's standard registry trust
@@ -244,7 +247,7 @@ Then set a password for the `work` user.
 
 ## Dependency Update Policy
 
-Node.js, pnpm, Codex, OpenCode, and Pi are intentionally installed without
+Node.js, pnpm, `cloudflared`, Codex, OpenCode, and Pi are intentionally installed without
 fixed version numbers. A clean image build picks up their latest available
 releases. The Node.js archive is verified against the latest upstream
 `SHASUMS256.txt.asc` manifest after that manifest is authenticated with the
@@ -258,9 +261,11 @@ unverified remote installer. Update that commit explicitly and rebuild for both
 
 Use an image SHA tag when a reproducible toolchain is required.
 
-`cloudflared` is pinned through the `CLOUDFLARED_VERSION` build argument and
-must be updated explicitly when adopting a newer Cloudflare release. The pinned
-package is available for both `linux/amd64` and `linux/arm64`.
+`cloudflared` is intentionally unpinned so a fresh image build picks up the
+latest package from Cloudflare's repository. The package is available for both
+`linux/amd64` and `linux/arm64`. CI refreshes this installation layer on every
+workflow run with `CLOUDFLARED_CACHE_BUST`; local builds can do the same with
+`--build-arg CLOUDFLARED_CACHE_BUST=$(date +%s)`.
 
 ## Local Development
 

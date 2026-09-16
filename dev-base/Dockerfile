@@ -1,7 +1,7 @@
 # Refresh this pinned digest when Ubuntu publishes updated 24.04 security fixes.
 FROM ubuntu:24.04@sha256:224a1869083a311ef3f13648a154ba79832fbef6364d31493642ca03082da254
 ARG OH_MY_ZSH_COMMIT=677a4592b18c08ddea737f8aca70bac0e9fc9313
-ARG CLOUDFLARED_VERSION=2026.9.1
+ARG CLOUDFLARED_CACHE_BUST=local
 
 # 1. 安装基础开发工具、Python、Go 和 GitHub CLI
 RUN set -eux; \
@@ -24,8 +24,9 @@ RUN set -eux; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
-# 2. 安装 cloudflared（Cloudflare 官方 APT 仓库 + 固定版本）
+# 2. 安装最新 cloudflared（Cloudflare 官方 APT 仓库）
 RUN set -eux; \
+    echo "cloudflared cache bust: ${CLOUDFLARED_CACHE_BUST}"; \
     ARCH="$(dpkg --print-architecture)"; \
     TMP_KEY="$(mktemp)"; \
     curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg -o "${TMP_KEY}"; \
@@ -36,8 +37,7 @@ RUN set -eux; \
     echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared any main" \
         > /etc/apt/sources.list.d/cloudflared.list; \
     apt-get update; \
-    apt-get install -y --no-install-recommends "cloudflared=${CLOUDFLARED_VERSION}"; \
-    test "$(dpkg-query -W -f='${Version}' cloudflared)" = "${CLOUDFLARED_VERSION}"; \
+    apt-get install -y --no-install-recommends cloudflared; \
     cloudflared --version; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
