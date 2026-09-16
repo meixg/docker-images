@@ -19,3 +19,32 @@ vulnerabilities:
       the affected module-proxy/checksum verification path is not used by gh.
       Remove this waiver when an official gh release includes x/mod v0.40.0 or
       later.
+  - id: CVE-2026-56854
+    purls:
+      - pkg:golang/golang.org/x/crypto
+    expired_at: "2026-12-31"
+    statement: >-
+      Trivy detects the module in the official cloudflared binary. cloudflared
+      uses golang.org/x/crypto/ssh only to encode an Access SSH public key and
+      does not call ssh.NewServerConn or implement an SSH server. This CVE
+      affects source-address enforcement in SSH server authentication callbacks.
+      Revisit when Cloudflare publishes a build using x/crypto v0.55.0 or later.
+  - id: CVE-2026-84304
+    purls:
+      - pkg:golang/google.golang.org/grpc
+    expired_at: "2026-12-31"
+    statement: >-
+      Trivy detects the module in the official cloudflared binary. cloudflared
+      uses gRPC through the OpenTelemetry client exporter and does not expose a
+      gRPC server. This CVE affects unauthenticated gRPC server HTTP/2 stream
+      handling. Revisit when Cloudflare publishes a build using grpc v1.83.1 or
+      later.
+  - id: CVE-2026-84445
+    purls:
+      - pkg:golang/google.golang.org/grpc
+    expired_at: "2026-12-31"
+    statement: >-
+      Trivy detects the module in the official cloudflared binary. cloudflared
+      does not configure or expose a gRPC xDS server, which is the affected code
+      path for this CVE. Revisit when Cloudflare publishes a build using a fixed
+      grpc release.
