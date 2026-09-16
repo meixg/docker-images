@@ -65,6 +65,7 @@ docker exec "${container_name}" su - work -c '
     zsh --version >/dev/null &&
     tmux -V >/dev/null &&
     gh --version >/dev/null &&
+    cloudflared --version >/dev/null &&
     codex --version >/dev/null &&
     pi --version >/dev/null &&
     opencode --version >/dev/null

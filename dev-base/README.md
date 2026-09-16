@@ -6,7 +6,7 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 
 - **Base OS**: Ubuntu 24.04 LTS
 - **SSH Server**: OpenSSH with key-based authentication only
-- **Development Tools**: git, vim, tmux, curl, wget, build-essential, Python 3, Go, GitHub CLI (`gh`)
+- **Development Tools**: git, vim, tmux, curl, wget, build-essential, Python 3, Go, GitHub CLI (`gh`), Cloudflare Tunnel daemon (`cloudflared`)
 - **Node.js**: Latest official binary with signed manifest verification (amd64/arm64)
 - **Package Manager**: pnpm (installed globally)
 - **Shell**: Zsh with Oh My Zsh framework
@@ -15,14 +15,16 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 - **OpenCode**: Pre-installed CLI
 - **Pi**: Pre-installed CLI
 
-Node.js, `pnpm`, GitHub CLI (`gh`), Codex, OpenCode, and Pi are preinstalled during the image
-build so they are immediately available in SSH sessions. The Dockerfile
+Node.js, `pnpm`, GitHub CLI (`gh`), `cloudflared`, Codex, OpenCode, and Pi are
+preinstalled during the image build so they are immediately available in SSH sessions.
+It is installed from Cloudflare's official APT repository at a fixed version. The Dockerfile
 authenticates the latest Node.js release manifest with tracked release keys
 before verifying the downloaded archive checksum. `pnpm`, Codex, OpenCode, and
 Pi are installed from npm over HTTPS and follow npm's standard registry trust
 model rather than the extra signed-manifest flow used for Node.js. GitHub CLI is
 installed from GitHub's official Debian repository; its archive keyring is
-verified with a tracked SHA256 checksum before `apt` uses it.
+verified with a tracked SHA256 checksum before `apt` uses it. The Cloudflare
+repository key is verified the same way.
 
 ## Usage
 
@@ -256,6 +258,10 @@ unverified remote installer. Update that commit explicitly and rebuild for both
 
 Use an image SHA tag when a reproducible toolchain is required.
 
+`cloudflared` is pinned through the `CLOUDFLARED_VERSION` build argument and
+must be updated explicitly when adopting a newer Cloudflare release. The pinned
+package is available for both `linux/amd64` and `linux/arm64`.
+
 ## Local Development
 
 ```bash
@@ -289,7 +295,7 @@ ssh -p 2222 work@<desktop-magicdns-hostname>
 
 - CI builds a local `dev-base` smoke-test image before publishing and runs `sshd -t`.
 - The smoke test starts the container, verifies the hardened SSH configuration, checks that `sshd` stays alive, and confirms public-key login works while root and password logins fail.
-- CI also verifies the preinstalled `node`, `pnpm`, `zsh`, `tmux`, `codex`, `pi`, and `opencode` commands.
+- CI also verifies the preinstalled `node`, `pnpm`, `zsh`, `tmux`, `gh`, `cloudflared`, `codex`, `pi`, and `opencode` commands.
 - Trivy scans the image for `HIGH` and `CRITICAL` OS and application vulnerabilities before publish; any non-waived finding fails the workflow.
 - Temporary Trivy waivers must be recorded in `.trivyignore.yaml` with the vulnerability ID and a justification.
 - Published images include an SBOM attestation and GitHub build provenance attestation in GHCR.

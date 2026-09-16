@@ -1,6 +1,7 @@
 # Refresh this pinned digest when Ubuntu publishes updated 24.04 security fixes.
 FROM ubuntu:24.04@sha256:224a1869083a311ef3f13648a154ba79832fbef6364d31493642ca03082da254
 ARG OH_MY_ZSH_COMMIT=677a4592b18c08ddea737f8aca70bac0e9fc9313
+ARG CLOUDFLARED_VERSION=2026.9.1
 
 # 1. 安装基础开发工具、Python、Go 和 GitHub CLI
 RUN set -eux; \
@@ -23,7 +24,25 @@ RUN set -eux; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
-# 2. 创建开发用户。固定 UID/GID，让 bind mount 的所有权契约保持稳定。
+# 2. 安装 cloudflared（Cloudflare 官方 APT 仓库 + 固定版本）
+RUN set -eux; \
+    ARCH="$(dpkg --print-architecture)"; \
+    TMP_KEY="$(mktemp)"; \
+    curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg -o "${TMP_KEY}"; \
+    echo "1bd95f4082b320d541bee351560fc2765aa9f9cd8efa4c9e32135e63f252721d  ${TMP_KEY}" \
+        | sha256sum -c -; \
+    install -D -m 0644 "${TMP_KEY}" /etc/apt/keyrings/cloudflare-main.gpg; \
+    rm -f "${TMP_KEY}"; \
+    echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared any main" \
+        > /etc/apt/sources.list.d/cloudflared.list; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends "cloudflared=${CLOUDFLARED_VERSION}"; \
+    test "$(dpkg-query -W -f='${Version}' cloudflared)" = "${CLOUDFLARED_VERSION}"; \
+    cloudflared --version; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*
+
+# 3. 创建开发用户。固定 UID/GID，让 bind mount 的所有权契约保持稳定。
 RUN groupadd --gid 1001 work && \
     useradd --uid 1001 --gid 1001 --create-home --home-dir /home/work --shell /bin/zsh work && \
     usermod -aG sudo work && \
@@ -31,7 +50,7 @@ RUN groupadd --gid 1001 work && \
     chmod 0440 /etc/sudoers.d/work && \
     visudo -cf /etc/sudoers.d/work
 
-# 3. 安装 oh-my-zsh（固定 commit，避免执行远程安装脚本）
+# 4. 安装 oh-my-zsh（固定 commit，避免执行远程安装脚本）
 # 升级方式：更新 OH_MY_ZSH_COMMIT 到目标 commit，并确认构建通过
 RUN git clone https://github.com/ohmyzsh/ohmyzsh.git /opt/oh-my-zsh && \
     cd /opt/oh-my-zsh && \
@@ -39,11 +58,11 @@ RUN git clone https://github.com/ohmyzsh/ohmyzsh.git /opt/oh-my-zsh && \
     test "$(git rev-parse HEAD)" = "${OH_MY_ZSH_COMMIT}" && \
     rm -rf /opt/oh-my-zsh/.git
 
-# 4. 复制配置文件
+# 5. 复制配置文件
 COPY .zshrc /etc/skel/.zshrc
 RUN install -o work -g work -m 0644 /etc/skel/.zshrc /home/work/.zshrc
 
-# 5. 安装最新版 Node.js 和 pnpm（官方二进制 + SHA256 校验）
+# 6. 安装最新版 Node.js 和 pnpm（官方二进制 + SHA256 校验）
 RUN set -eu; \
     ARCH="$(dpkg --print-architecture)"; \
     case "${ARCH}" in \
@@ -87,7 +106,7 @@ RUN set -eu; \
     node -v && \
     npm -v
 
-# 6. 安装 Codex、OpenCode 和 Pi
+# 7. 安装 Codex、OpenCode 和 Pi
 RUN npm install -g pnpm @openai/codex opencode-ai && \
     npm install -g --ignore-scripts @earendil-works/pi-coding-agent && \
     pnpm --version && \
