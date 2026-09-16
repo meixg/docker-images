@@ -166,8 +166,8 @@ docker stop dev-paseo && docker rm dev-paseo
   trigger the publish workflow on pushes to `main`.
 - The `dev-paseo` build runs after `dev-base` is published, ensuring it always
   uses the latest published `dev-base` as its base image.
-- Scheduled rebuilds (weekly) and manual workflow runs with `clean_rebuild`
-  enabled rebuild all layers without cache.
+- Every workflow build pulls the latest base image and rebuilds all layers without
+  cache, so the inherited tools and Paseo npm packages are upgraded on every build.
 - Published images include an SBOM attestation and GitHub build provenance
   attestation in GHCR.
 
