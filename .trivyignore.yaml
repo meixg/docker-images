@@ -22,7 +22,7 @@ vulnerabilities:
   - id: CVE-2026-56854
     purls:
       - pkg:golang/golang.org/x/crypto
-    expired_at: "2026-12-31"
+    expired_at: "2026-12-31T23:59:59Z"
     statement: >-
       Trivy detects the module in the official cloudflared binary. cloudflared
       uses golang.org/x/crypto/ssh only to encode an Access SSH public key and
@@ -32,7 +32,7 @@ vulnerabilities:
   - id: CVE-2026-84304
     purls:
       - pkg:golang/google.golang.org/grpc
-    expired_at: "2026-12-31"
+    expired_at: "2026-12-31T23:59:59Z"
     statement: >-
       Trivy detects the module in the official cloudflared binary. cloudflared
       uses gRPC through the OpenTelemetry client exporter and does not expose a
@@ -42,7 +42,7 @@ vulnerabilities:
   - id: CVE-2026-84445
     purls:
       - pkg:golang/google.golang.org/grpc
-    expired_at: "2026-12-31"
+    expired_at: "2026-12-31T23:59:59Z"
     statement: >-
       Trivy detects the module in the official cloudflared binary. cloudflared
       does not configure or expose a gRPC xDS server, which is the affected code
