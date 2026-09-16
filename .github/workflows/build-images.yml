@@ -14,16 +14,9 @@ on:
     # Weekly clean rebuild every Monday at 03:00 UTC.
     - cron: '0 3 * * 1'
   workflow_dispatch:
-    inputs:
-      clean_rebuild:
-        description: 'Force a clean rebuild (re-pull pinned base image digest and ignore build cache)'
-        required: false
-        default: false
-        type: boolean
 
 env:
   REGISTRY: ghcr.io
-  CLEAN_REBUILD: ${{ toJSON(github.event_name == 'schedule' || github.event.inputs.clean_rebuild == 'true' || github.event.inputs.clean_rebuild == true) }}
 
 jobs:
   verify-dev-base:
@@ -38,12 +31,7 @@ jobs:
       - name: Build smoke-test image
         run: |
           set -euo pipefail
-          build_args=()
-          if [ "${CLEAN_REBUILD}" = "true" ]; then
-            build_args+=(--pull --no-cache)
-          fi
-          build_args+=(--build-arg "CLOUDFLARED_CACHE_BUST=${{ github.run_id }}")
-          docker build "${build_args[@]}" \
+          docker build --pull --no-cache \
             -t dev-base-smoke:${{ github.sha }} \
             ./dev-base
 
@@ -111,10 +99,8 @@ jobs:
           context: ./${{ matrix.image }}
           platforms: linux/amd64,linux/arm64
           push: true
-          pull: ${{ fromJSON(env.CLEAN_REBUILD) }}
-          no-cache: ${{ fromJSON(env.CLEAN_REBUILD) }}
-          build-args: |
-            CLOUDFLARED_CACHE_BUST=${{ github.run_id }}
+          pull: true
+          no-cache: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -172,8 +158,8 @@ jobs:
           context: ./dev-paseo
           platforms: linux/amd64,linux/arm64
           push: true
-          pull: ${{ fromJSON(env.CLEAN_REBUILD) }}
-          no-cache: ${{ fromJSON(env.CLEAN_REBUILD) }}
+          pull: true
+          no-cache: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

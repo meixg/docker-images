@@ -18,8 +18,8 @@ Ubuntu 24.04 LTS-based development environment container with SSH access.
 Node.js, `pnpm`, GitHub CLI (`gh`), `cloudflared`, Codex, OpenCode, and Pi are
 preinstalled during the image build so they are immediately available in SSH sessions.
 `cloudflared` is installed from Cloudflare's official APT repository without a
-version pin, so each image build uses the repository's latest release. CI passes
-a unique cache-bust value to ensure the installation layer is refreshed on every
+version pin, so each image build uses the repository's latest release. CI uses
+`--pull --no-cache` to ensure all installation layers are refreshed on every
 workflow run. The Dockerfile
 authenticates the latest Node.js release manifest with tracked release keys
 before verifying the downloaded archive checksum. `pnpm`, Codex, OpenCode, and
@@ -247,32 +247,31 @@ Then set a password for the `work` user.
 
 ## Dependency Update Policy
 
-Node.js, pnpm, `cloudflared`, Codex, OpenCode, and Pi are intentionally installed without
-fixed version numbers. A clean image build picks up their latest available
-releases. The Node.js archive is verified against the latest upstream
+The Ubuntu 24.04 base image, APT packages, Node.js, `cloudflared`, pnpm, Codex,
+OpenCode, Pi, and the Paseo packages are intentionally installed without fixed
+version numbers. Every CI image build uses `--pull --no-cache`, so it picks up
+the latest available releases. The Node.js archive is verified against the latest upstream
 `SHASUMS256.txt.asc` manifest after that manifest is authenticated with the
 tracked Node.js release keys. Using the unversioned `latest` endpoint is
 intentional here to preserve the main branch's rolling-toolchain behavior; use
 an image SHA tag when you need a reproducible environment.
 
-Oh My Zsh remains pinned through `OH_MY_ZSH_COMMIT` to avoid executing an
-unverified remote installer. Update that commit explicitly and rebuild for both
-`linux/amd64` and `linux/arm64` when upgrading it.
+Oh My Zsh is cloned from its default branch at build time, so it also follows
+the latest upstream release.
 
 Use an image SHA tag when a reproducible toolchain is required.
 
-`cloudflared` is intentionally unpinned so a fresh image build picks up the
-latest package from Cloudflare's repository. The package is available for both
-`linux/amd64` and `linux/arm64`. CI refreshes this installation layer on every
-workflow run with `CLOUDFLARED_CACHE_BUST`; local builds can do the same with
-`--build-arg CLOUDFLARED_CACHE_BUST=$(date +%s)`.
+The Node.js release-key revision, APT repository key checksums, and GitHub
+Actions commit SHAs remain fixed as supply-chain trust anchors rather than
+software-version pins. The package is available for both `linux/amd64` and
+`linux/arm64`.
 
 ## Local Development
 
 ```bash
-# Build locally
+# Build locally with the latest base image and dependencies
 cd dev-base
-docker build -t dev-base .
+docker build --pull --no-cache -t dev-base .
 
 # Run the smoke test against a locally built image
 ./smoke-test.sh dev-base
@@ -293,8 +292,8 @@ ssh -p 2222 work@<desktop-magicdns-hostname>
 
 - Changes to files under `dev-base/` (including `Dockerfile`, `entrypoint.sh`, and `.zshrc`) trigger the publish workflow on pushes to `main`.
 - The publish workflow also performs a scheduled rebuild every Monday at 03:00 UTC.
-- Scheduled rebuilds, and manual workflow runs with `clean_rebuild` enabled, ensure the pinned `ubuntu:24.04` base image digest is present locally and bypass BuildKit cache for all build layers.
-- Regular push builds continue to use GitHub Actions cache for faster day-to-day publishes.
+- Every workflow build pulls the latest `ubuntu:24.04` base image and bypasses BuildKit cache for all build layers.
+- This rolling policy prioritizes fresh dependencies over reproducibility; use an image SHA tag when reproducibility is required.
 
 ## CI Verification and Supply Chain Metadata
 

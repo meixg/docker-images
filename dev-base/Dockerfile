@@ -1,7 +1,5 @@
-# Refresh this pinned digest when Ubuntu publishes updated 24.04 security fixes.
-FROM ubuntu:24.04@sha256:224a1869083a311ef3f13648a154ba79832fbef6364d31493642ca03082da254
-ARG OH_MY_ZSH_COMMIT=677a4592b18c08ddea737f8aca70bac0e9fc9313
-ARG CLOUDFLARED_CACHE_BUST=local
+# Track the latest Ubuntu 24.04 image; CI builds with --pull --no-cache.
+FROM ubuntu:24.04
 
 # 1. 安装基础开发工具、Python、Go 和 GitHub CLI
 RUN set -eux; \
@@ -26,7 +24,6 @@ RUN set -eux; \
 
 # 2. 安装最新 cloudflared（Cloudflare 官方 APT 仓库）
 RUN set -eux; \
-    echo "cloudflared cache bust: ${CLOUDFLARED_CACHE_BUST}"; \
     ARCH="$(dpkg --print-architecture)"; \
     TMP_KEY="$(mktemp)"; \
     curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg -o "${TMP_KEY}"; \
@@ -50,12 +47,8 @@ RUN groupadd --gid 1001 work && \
     chmod 0440 /etc/sudoers.d/work && \
     visudo -cf /etc/sudoers.d/work
 
-# 4. 安装 oh-my-zsh（固定 commit，避免执行远程安装脚本）
-# 升级方式：更新 OH_MY_ZSH_COMMIT 到目标 commit，并确认构建通过
-RUN git clone https://github.com/ohmyzsh/ohmyzsh.git /opt/oh-my-zsh && \
-    cd /opt/oh-my-zsh && \
-    git checkout --detach "${OH_MY_ZSH_COMMIT}" && \
-    test "$(git rev-parse HEAD)" = "${OH_MY_ZSH_COMMIT}" && \
+# 4. 安装最新 oh-my-zsh
+RUN git clone --depth 1 https://github.com/ohmyzsh/ohmyzsh.git /opt/oh-my-zsh && \
     rm -rf /opt/oh-my-zsh/.git
 
 # 5. 复制配置文件
