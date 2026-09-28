@@ -5,7 +5,7 @@ FROM ubuntu:24.04
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-    ca-certificates gnupg openssh-server sudo curl git vim wget build-essential python3 golang-go zsh tmux xz-utils; \
+    ca-certificates gnupg openssh-server sudo curl git vim wget build-essential python3 golang-go zsh tmux xz-utils jq; \
     install -d -m 0755 /etc/apt/keyrings /etc/apt/sources.list.d; \
     curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
         -o /etc/apt/keyrings/githubcli-archive-keyring.gpg; \
