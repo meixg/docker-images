@@ -100,8 +100,9 @@ RUN set -eu; \
     npm -v
 
 # 7. 安装 Codex、OpenCode 和 Pi
-RUN npm install -g pnpm @openai/codex opencode-ai && \
+RUN npm install -g npm@latest pnpm @openai/codex opencode-ai && \
     npm install -g --ignore-scripts @earendil-works/pi-coding-agent && \
+    npm --version && \
     pnpm --version && \
     codex --version && \
     pi --version && \

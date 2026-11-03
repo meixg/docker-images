@@ -48,3 +48,36 @@ vulnerabilities:
       does not configure or expose a gRPC xDS server, which is the affected code
       path for this CVE. Revisit when Cloudflare publishes a build using a fixed
       grpc release.
+  # npm vendors its HTTP client inside the published tarball, so the npm copy in
+  # /usr/local/lib/node_modules/npm cannot be upgraded independently of npm
+  # itself. npm 12.2.1 (latest) still bundles undici 6.29.0; these three CVEs are
+  # fixed in undici 6.29.1. The image only uses npm interactively against
+  # trusted registries over TLS, and the tools under /usr/local/lib/node_modules
+  # (pi, codex, opencode) ship their own patched undici.
+  - id: CVE-2026-109383
+    purls:
+      - pkg:npm/undici
+    paths:
+      - "usr/local/lib/node_modules/npm/node_modules/undici/package.json"
+    expired_at: "2027-02-01T00:00:00Z"
+    statement: >-
+      npm 12.2.1 (latest) vendors undici 6.29.0; no released npm bundle ships
+      undici 6.29.1 yet. Revisit for the next npm release.
+  - id: CVE-2026-109869
+    purls:
+      - pkg:npm/undici
+    paths:
+      - "usr/local/lib/node_modules/npm/node_modules/undici/package.json"
+    expired_at: "2027-02-01T00:00:00Z"
+    statement: >-
+      npm 12.2.1 (latest) vendors undici 6.29.0; no released npm bundle ships
+      undici 6.29.1 yet. Revisit for the next npm release.
+  - id: CVE-2026-87018
+    purls:
+      - pkg:npm/undici
+    paths:
+      - "usr/local/lib/node_modules/npm/node_modules/undici/package.json"
+    expired_at: "2027-02-01T00:00:00Z"
+    statement: >-
+      npm 12.2.1 (latest) vendors undici 6.29.0; no released npm bundle ships
+      undici 6.29.1 yet. Revisit for the next npm release.
