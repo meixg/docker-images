@@ -1,8 +1,8 @@
 # dev-paseo
 
 Paseo daemon container built on top of the `dev-base` image. Provides a
-ready-to-run Paseo server with Codex, OpenCode, Pi, and a full development
-toolchain.
+ready-to-run Paseo server with Codex, OpenCode, Pi, DeepSeek Harness, and a
+full development toolchain.
 
 ## Features
 
@@ -16,10 +16,12 @@ All features from [dev-base](../dev-base/) are inherited:
 - **Codex**: Pre-installed CLI
 - **OpenCode**: Pre-installed CLI
 - **Pi**: Pre-installed CLI
+- **DeepSeek Harness**: Pre-installed `dsh` CLI (`@deepseek-ai/dsh`)
 
 Additional features in this image:
 
 - **Paseo Daemon**: `@getpaseo/cli` and `@getpaseo/server` installed from npm
+- **DeepSeek Harness ACP integration**: registered as a custom ACP provider by default
 - **Web UI**: Paseo web interface enabled by default on port 6767
 - **User**: Runs as the `work` user (UID/GID 1001, home `/home/work`)
 - **Default shell**: `/bin/zsh` is exported in the daemon environment
@@ -32,6 +34,73 @@ creation path does not send a command or arguments. The server then resolves
 the shell from its environment, so relying only on the `work` user's login
 shell (`/etc/passwd`) is not sufficient. Docker Compose and `docker run` may
 still explicitly override `SHELL` when a different shell is required.
+
+## DeepSeek Harness
+
+The image installs the official DeepSeek Harness CLI, `dsh`, and registers it
+as a Paseo ACP provider. Verify the CLI inside the container:
+
+```bash
+docker exec -it dev-paseo dsh --version
+docker exec -it dev-paseo dsh --profile acp --help
+```
+
+### Credentials
+
+On first start the entrypoint creates
+`${DSH_HOME}/.credentials.yaml` (`/home/work/.dsh/.credentials.yaml`) with
+owner-only permissions and a placeholder key:
+
+```yaml
+version: 1
+
+refs:
+  DEEPSEEK_API_KEY: ${DeepSeek API Key}
+```
+
+Replace `${DeepSeek API Key}` with a real DeepSeek API key. DSH gives the
+stored credentials file precedence over the launch environment, so an
+inherited `DEEPSEEK_API_KEY` is ignored while the placeholder entry exists;
+delete the `refs` entry if you would rather supply the key through the
+environment.
+
+### Paseo ACP provider
+
+Paseo does not ship a first-class DeepSeek provider. The entrypoint adds this
+provider to `${PASEO_HOME}/config.json` when it is missing:
+
+```json
+"dsh": {
+  "extends": "acp",
+  "label": "DeepSeek Harness",
+  "description": "DeepSeek Harness (dsh) coding agent over ACP stdio.",
+  "command": ["dsh", "--profile", "acp"],
+  "env": {},
+  "enabled": true
+}
+```
+
+If `config.json` does not exist, the entrypoint writes a default config that
+includes this provider. If the file already exists, only
+`agents.providers.dsh` is added; existing settings are preserved. An existing
+`dsh` entry is never overwritten, so local customizations survive container
+restarts.
+
+The ACP profile is prewarmed at image build time and again by the entrypoint
+when the mounted `${DSH_HOME}/profiles/acp` directory is missing. This keeps
+Paseo's provider probe from timing out while DSH bootstraps the profile on
+first use.
+
+After changing the provider configuration manually in a running container,
+apply it without restarting the daemon:
+
+```bash
+docker exec -it dev-paseo paseo reload
+docker exec -it dev-paseo paseo provider diagnostic dsh
+```
+
+Because `/home/work` is bind-mounted, DSH profiles, credentials, and Paseo
+configuration persist across container rebuilds.
 
 ## Usage
 
@@ -102,6 +171,7 @@ docker exec -it dev-paseo paseo agent list
 | `PASEO_WEB_UI_ENABLED` | `true` | Enable/disable the web UI |
 | `PASEO_LOG_LEVEL` | `info` | Log level (trace/debug/info/warn/error) |
 | `PASEO_LOG_FORMAT` | `json` | Log format (json/text) |
+| `DSH_HOME` | `/home/work/.dsh` | DeepSeek Harness data directory |
 | `PASEO_PASSWORD` | _(unset)_ | Authentication password for the Paseo web UI |
 
 If `PASEO_PASSWORD` is not set, the daemon starts without authentication and

@@ -12,6 +12,7 @@ ENV USER=work \
     PASEO_LOG_FORMAT=json \
     PASEO_LOG_LEVEL=info \
     CODEX_HOME=/home/work/.codex \
+    DSH_HOME=/home/work/.dsh \
     XDG_CONFIG_HOME=/home/work/.config \
     XDG_DATA_HOME=/home/work/.local/share \
     XDG_STATE_HOME=/home/work/.local/state \
@@ -28,9 +29,15 @@ RUN npm install -g @getpaseo/cli @getpaseo/server && \
     node --check "$server_entry" && \
     npm cache clean --force
 
+# DeepSeek Harness CLI (`dsh`). Paseo drives it through its ACP profile.
+RUN npm install -g @deepseek-ai/dsh && \
+    dsh --version && \
+    npm cache clean --force
+
 RUN mkdir -p \
     /home/work/.paseo \
     /home/work/.codex \
+    /home/work/.dsh \
     /home/work/.pi/agent \
     /home/work/.config \
     /home/work/.local/share \
@@ -41,8 +48,21 @@ RUN mkdir -p \
 COPY entrypoint.sh /usr/local/bin/dev-paseo-entrypoint
 RUN chmod +x /usr/local/bin/dev-paseo-entrypoint
 
+# DSH credential store template. The runtime entrypoint copies it into a
+# bind-mounted home when no credentials file exists yet.
+COPY dsh-credentials.yaml /usr/local/share/dev-paseo/dsh-credentials.yaml
+RUN chmod 644 /usr/local/share/dev-paseo/dsh-credentials.yaml && \
+    install -o work -g work -m 600 \
+      /usr/local/share/dev-paseo/dsh-credentials.yaml \
+      /home/work/.dsh/.credentials.yaml
+
 USER work
 WORKDIR /home/work
+
+# Prewarm the ACP profile so Paseo's provider probe does not pay for first-run
+# profile initialization (and time out).
+RUN dsh --profile acp --help
+
 EXPOSE 6767
 VOLUME ["/home/work"]
 

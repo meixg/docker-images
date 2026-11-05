@@ -63,6 +63,7 @@ ssh -p 2222 work@<desktop-magicdns-hostname>
 
 **主要特性**：
 - 继承 dev-base 的所有开发工具（git, vim, tmux, Node.js, pnpm, Codex, OpenCode, Pi）
+- 预装 DeepSeek Harness CLI（`dsh`），并自动注册为 Paseo ACP provider
 - 预装 Paseo CLI 和 Server（从 npm 安装）
 - Paseo Web UI（默认端口 6767）
 - 无 SSH，只运行 Paseo 守护进程
